@@ -1,0 +1,297 @@
+---
+title: Admin Dashboard
+description: Platform administration tools for managing users, courses, and payments
+---
+
+## Overview
+
+The Admin Dashboard provides platform administrators with comprehensive tools to manage users, courses, and payment records. This administrative interface is only accessible to users with admin privileges.
+
+<Note>
+  Admin access is granted through the `isAdmin` flag in the user session. Only administrators can access the dashboard at `/admin/dashboard/:id`.
+</Note>
+
+## Accessing the Dashboard
+
+The admin dashboard is protected by role-based access control. The route is conditionally rendered based on admin status:
+
+```jsx
+// From App.jsx:73-78
+const adminRoutes = (
+  <Route
+    path="/admin/dashboard/:id"
+    element={<Dashboard updateContextUser={updateContextUser} />}
+  />
+);
+```
+
+Access is granted only when:
+- User has `isAdmin: true` in their session
+- User is authenticated
+- Valid user ID is provided in the route parameter
+
+## Dashboard Features
+
+The admin dashboard consists of three main management sections accessible via a sidebar navigation:
+
+<CardGroup cols={3}>
+  <Card title="User Management" icon="users">
+    View and manage all registered users on the platform
+  </Card>
+  <Card title="Course Management" icon="book">
+    Monitor and control course listings and availability
+  </Card>
+  <Card title="Payment Records" icon="credit-card">
+    Track all payment transactions and enrollment history
+  </Card>
+</CardGroup>
+
+## User Management
+
+### View Users
+
+The Users section displays a comprehensive table of all registered users with the following information:
+
+| Column | Description |
+|--------|-------------|
+| ID | Unique user identifier (UUID) |
+| Email | User's email address |
+| Nombre | First name |
+| Apellido | Last name |
+| Estado | Enabled/disabled status (checkbox) |
+| Action | Block/unblock button |
+
+**Source:** `src/views/dashboard/Content.jsx:15-67`
+
+### Block/Unblock Users
+
+Administrators can block or unblock user accounts:
+
+**Block User:**
+```javascript
+// From Dashboard.jsx:56-88
+const handleBlockUser = async (user) => {
+  if (user.enabled === true) {
+    // Confirm blocking
+    const response = await axios.put("/users/user/edit", {
+      ...user,
+      enabled: false,
+    });
+  }
+};
+```
+
+**Unblock User:**
+```javascript
+// From Dashboard.jsx:90-122
+if (user.enabled === false) {
+  // Confirm unblocking
+  const response = await axios.put("/users/user/edit", {
+    ...user,
+    enabled: true,
+  });
+}
+```
+
+<Warning>
+  Blocking a user prevents them from logging into the platform. Their data is preserved but account access is disabled.
+</Warning>
+
+## Course Management
+
+### View Courses
+
+The Courses section displays all courses on the platform:
+
+| Column | Description |
+|--------|-------------|
+| Id | Course unique identifier |
+| Titulo | Course title |
+| Categoría | Course category |
+| Precio | Base price |
+| En venta | On sale status (Yes/No) |
+| Descuento | Discount percentage (if applicable) |
+| Imagen | Course thumbnail (50x50px preview) |
+| Estado | Enabled status checkbox |
+| Action | Block/unblock button |
+
+**Source:** `src/views/dashboard/Content.jsx:68-135`
+
+### Block/Unblock Courses
+
+Administrators can control course visibility and availability:
+
+**Block Course:**
+```javascript
+// From Dashboard.jsx:124-158
+const handleBlockCourse = (course) => {
+  if (course.enabled === true) {
+    const response = await updateCourse({
+      ...course,
+      enabled: false,
+      banned: true,
+    });
+  }
+};
+```
+
+**Unblock Course:**
+```javascript
+// From Dashboard.jsx:159-193
+if (course.enabled === false) {
+  const response = await updateCourse({
+    ...course,
+    enabled: true,
+    banned: false,
+  });
+}
+```
+
+<Info>
+  Blocked courses are marked with `banned: true` and `enabled: false`. They become invisible to students and instructors but data is retained.
+</Info>
+
+## Payment Management
+
+### View Payment Records
+
+The Payments section provides a read-only view of all platform transactions:
+
+| Column | Description |
+|--------|-------------|
+| ID de Pago | Payment unique identifier |
+| Nombre de usuario | User's full name (first + last) |
+| Fecha de Pago | Payment date |
+| Monto | Payment amount in USD |
+| Método de Pago | Payment method (e.g., Stripe) |
+| Estado de Pago | Payment status (completed, pending, failed) |
+
+**Source:** `src/views/dashboard/Content.jsx:136-166`
+
+### Payment Data Structure
+
+```javascript
+// Payment record structure
+{
+  id: "uuid",
+  User: {
+    first_name: "John",
+    last_name: "Doe"
+  },
+  payment_date: "2024-03-05T10:30:00Z",
+  amount: 29.99,
+  payment_method: "stripe",
+  payment_status: "completed"
+}
+```
+
+## Data Fetching
+
+The dashboard loads data from three utility functions:
+
+<Tabs>
+  <Tab title="Users">
+    ```javascript
+    // From Dashboard.jsx:41-44
+    const handleUsers = async () => {
+      const usuarios = await getAllUser();
+      setUsers(usuarios);
+    };
+    ```
+  </Tab>
+  
+  <Tab title="Courses">
+    ```javascript
+    // From Dashboard.jsx:46-49
+    const handleCourses = async () => {
+      const courses = await getAllCourses();
+      setCourses(courses);
+    };
+    ```
+  </Tab>
+  
+  <Tab title="Payments">
+    ```javascript
+    // From Dashboard.jsx:51-54
+    const handlePayments = async () => {
+      const payments = await getAllPayments();
+      setPayments(payments);
+    };
+    ```
+  </Tab>
+</Tabs>
+
+## Dashboard Layout
+
+The dashboard uses a two-column layout:
+
+```jsx
+// From Dashboard.jsx:195-207
+return (
+  <div className={style.container}>
+    <Sidebar onButtonClick={handleButtonClick} />
+    <Content
+      selectedButton={selectedButton}
+      users={users}
+      courses={courses}
+      payments={payments}
+      handleBlockUser={handleBlockUser}
+      handleBlockCourse={handleBlockCourse}
+    />
+  </div>
+);
+```
+
+**Components:**
+- **Sidebar** - Navigation menu with three buttons (Usuarios, Cursos, Pagos)
+- **Content** - Main content area displaying selected data table
+
+**Source:** `src/views/dashboard/Sidebar.jsx:1-25`
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="User Management">
+    - Always verify user identity before blocking accounts
+    - Document the reason for blocking users
+    - Communicate with users before taking blocking action
+    - Regularly review blocked accounts for potential reinstatement
+  </Accordion>
+
+  <Accordion title="Course Moderation">
+    - Review course content before blocking
+    - Block courses that violate platform policies
+    - Notify instructors when courses are blocked
+    - Set `banned: true` flag to distinguish administrative blocks from instructor deactivations
+  </Accordion>
+
+  <Accordion title="Payment Monitoring">
+    - Regularly audit payment records for discrepancies
+    - Monitor for unusual payment patterns
+    - Cross-reference payment amounts with course prices
+    - Track payment status changes over time
+  </Accordion>
+</AccordionGroup>
+
+## Security Considerations
+
+<Warning>
+  Admin privileges grant significant control over the platform. Follow these security practices:
+</Warning>
+
+- **Access Control** - Only grant admin access to trusted personnel
+- **Audit Logging** - Track all administrative actions with timestamps and user IDs
+- **Two-Factor Authentication** - Require 2FA for admin accounts
+- **Regular Review** - Periodically review admin user list
+- **Principle of Least Privilege** - Grant minimum permissions necessary
+
+## Related Documentation
+
+<CardGroup cols={2}>
+  <Card title="User Profiles" icon="user" href="/features/user-profiles">
+    Learn about user profile management
+  </Card>
+  <Card title="Course Management" icon="book" href="/instructors/managing-content">
+    Instructor course management tools
+  </Card>
+</CardGroup>
