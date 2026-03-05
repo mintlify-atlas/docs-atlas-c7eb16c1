@@ -1,0 +1,101 @@
+{
+  "projectType": "saas",
+  "projectName": "EducaStream",
+  "projectDescription": "An online course platform connecting students and instructors with course browsing, enrollment, payment processing, and learning management features.",
+  "theme": "almond",
+  "primaryColor": "#6366f1",
+  "lightColor": "#818cf8",
+  "darkColor": "#4f46e5",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": ["introduction", "quickstart"]
+          },
+          {
+            "group": "For Students",
+            "pages": [
+              "students/browsing-courses",
+              "students/enrolling",
+              "students/learning-interface",
+              "students/ratings-reviews"
+            ]
+          },
+          {
+            "group": "For Instructors",
+            "pages": [
+              "instructors/creating-courses",
+              "instructors/managing-content",
+              "instructors/student-management"
+            ]
+          },
+          {
+            "group": "Platform Features",
+            "pages": [
+              "features/cart-checkout",
+              "features/user-profiles",
+              "features/search-filters"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Developer Guide",
+        "groups": [
+          {
+            "group": "Development",
+            "pages": [
+              "dev/architecture",
+              "dev/setup",
+              "dev/firebase-config",
+              "dev/stripe-integration"
+            ]
+          },
+          {
+            "group": "Components",
+            "pages": [
+              "dev/components/overview",
+              "dev/components/styling",
+              "dev/components/routing"
+            ]
+          },
+          {
+            "group": "API Reference",
+            "pages": [
+              "api/utils-functions",
+              "api/context-providers"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Course browsing with search and category filters",
+    "Shopping cart and Stripe payment integration",
+    "Separate dashboards for students and instructors",
+    "Course creation and content management",
+    "Video player integration with React Player",
+    "Rating and review system",
+    "Firebase storage for media files",
+    "Email notifications via EmailJS",
+    "User authentication and role-based access"
+  ],
+  "publicApiSurface": [
+    "CartContext - Shopping cart state management",
+    "CartProvider - Cart context provider",
+    "useCart() - Cart hook for accessing cart state",
+    "getAllCourses() - Fetch all courses",
+    "getAllCategories() - Fetch all categories",
+    "getAllUser() - Fetch all users",
+    "getUserById() - Fetch user by ID",
+    "getOnSaleCourses() - Fetch discounted courses",
+    "postCreateCourse() - Create new course",
+    "postPaymentCart() - Process cart payment",
+    "updateCourse() - Update course details",
+    "updateUser() - Update user information"
+  ]
+}
