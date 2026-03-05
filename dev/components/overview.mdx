@@ -1,0 +1,268 @@
+---
+title: "Component Architecture Overview"
+description: "Understanding the component structure and organization in EducaStream"
+---
+
+## Component Architecture
+
+EducaStream uses a component-based architecture built with React, organizing components into reusable, modular units. The application follows a clear separation between presentational components and page-level views.
+
+## Directory Structure
+
+The component architecture is organized into two main directories:
+
+```
+src/
+├── Components/       # Reusable UI components
+│   ├── Button/
+│   ├── Card/
+│   ├── CardContainer/
+│   ├── CardLayout/
+│   ├── Carrousel/
+│   ├── Cart/
+│   ├── Footer/
+│   ├── NavBar/
+│   └── Loader/
+└── views/           # Page-level components
+    ├── Courses/
+    ├── DetailCourse/
+    ├── Student/
+    ├── Instructor/
+    ├── Layout/
+    └── dashboard/
+```
+
+## Component Categories
+
+### UI Components
+
+Reusable components located in `src/Components/` that handle specific UI functionality:
+
+<Tabs>
+  <Tab title="Button">
+    **Button Component**
+    
+    A reusable button component with consistent styling and scroll-to-top functionality.
+    
+    ```jsx
+    import Button from "./Components/Button/Button";
+    
+    <Button 
+      text="Click Me" 
+      onClick={() => console.log('clicked')} 
+    />
+    ```
+    
+    **Props:**
+    - `text` (string) - Button label text
+    - `onClick` (function) - Click handler function
+  </Tab>
+  
+  <Tab title="Card">
+    **Card Component**
+    
+    Displays course information in a card format with pricing, ratings, and actions.
+    
+    ```jsx
+    import Card from "./Components/Card/Card";
+    
+    <Card course={courseData} />
+    ```
+    
+    **Props:**
+    - `course` (object) - Course data object containing:
+      - `id` - Course identifier
+      - `title` - Course title
+      - `description` - Course description
+      - `price` - Course price
+      - `image` - Course image URL
+      - `category` - Course category
+      - `ratings` - Array of rating objects
+      - `lesson` - Array of lesson objects
+      - `onSale` - Boolean for sale status
+      - `percentageDiscount` - Discount percentage
+  </Tab>
+  
+  <Tab title="NavBar">
+    **NavBar Component**
+    
+    Main navigation component with user authentication state and responsive menu.
+    
+    ```jsx
+    import NavBar from "./Components/NavBar/NavBar";
+    
+    <NavBar />
+    ```
+    
+    **Features:**
+    - Responsive mobile menu
+    - User profile dropdown
+    - Shopping cart integration
+    - Authentication state handling
+    - Context-aware navigation links
+  </Tab>
+  
+  <Tab title="Carrousel">
+    **Carrousel Component**
+    
+    Image carousel using react-responsive-carousel library.
+    
+    ```jsx
+    import { Carrousel } from "./Components/Carrousel/Carrousel";
+    
+    <Carrousel />
+    ```
+    
+    **Configuration:**
+    - Auto-play enabled (5 second interval)
+    - Fade animation
+    - Infinite loop
+    - No thumbnails or status display
+  </Tab>
+</Tabs>
+
+### Layout Components
+
+<Tabs>
+  <Tab title="CardContainer">
+    **CardContainer Component**
+    
+    Wrapper component for individual course cards.
+    
+    ```jsx
+    import CardContainer from "./Components/CardContainer/CardContainer";
+    
+    <CardContainer course={courseData} />
+    ```
+  </Tab>
+  
+  <Tab title="CardLayout">
+    **CardLayout Component**
+    
+    Alternative card layout for course display with compact design.
+    
+    ```jsx
+    import CardLayout from "./Components/CardLayout/CardLayout";
+    
+    <CardLayout courses={courseData} />
+    ```
+    
+    **Features:**
+    - Compact card design
+    - Pricing with discount display
+    - Context-aware purchase buttons
+    - Shopping cart integration
+  </Tab>
+  
+  <Tab title="Footer">
+    **Footer Component**
+    
+    Application footer with links and information.
+    
+    ```jsx
+    import Footer from "./Components/Footer/Footer";
+    
+    <Footer />
+    ```
+    
+    **Includes:**
+    - Site navigation links
+    - Team member LinkedIn profiles
+    - Terms and privacy links
+    - Copyright information
+  </Tab>
+</Tabs>
+
+### Utility Components
+
+<Tabs>
+  <Tab title="Loader">
+    **Loader Component**
+    
+    Loading spinner for async operations.
+    
+    ```jsx
+    import Loader from "./Components/Loader/Loader";
+    
+    {isLoading && <Loader />}
+    ```
+  </Tab>
+  
+  <Tab title="Cart">
+    **Cart Component**
+    
+    Shopping cart functionality integrated into the navigation bar.
+    
+    ```jsx
+    import Cart from "./Components/Cart/Cart";
+    
+    <Cart />
+    ```
+  </Tab>
+</Tabs>
+
+## Page-Level Views
+
+Views are located in `src/views/` and represent full pages:
+
+- **Layout** - Home page layout with course listings
+- **Courses** - Course catalog with filtering and pagination
+- **DetailCourse** - Individual course detail page
+- **Student** - Student dashboard
+- **Instructor** - Instructor dashboard
+- **Dashboard** - Admin dashboard
+- **Login** - Authentication page
+
+## Context Usage
+
+Components utilize React Context for state management:
+
+```jsx
+import { userContext } from "../../App";
+import { useContext } from "react";
+
+const MyComponent = () => {
+  const userData = useContext(userContext);
+  // Access user data across components
+};
+```
+
+The `userContext` provides:
+- User authentication state
+- User profile information
+- Course purchase history
+- Role-based permissions
+
+## Component Communication
+
+<CardGroup cols={2}>
+  <Card title="Props Down" icon="arrow-down">
+    Parent components pass data to children via props
+  </Card>
+  <Card title="Context" icon="share-nodes">
+    Global state shared via React Context
+  </Card>
+  <Card title="Cart Context" icon="cart-shopping">
+    Shopping cart state managed separately
+  </Card>
+  <Card title="Navigation" icon="route">
+    React Router for page navigation
+  </Card>
+</CardGroup>
+
+## Best Practices
+
+<Note>
+When creating new components in EducaStream:
+
+1. Place reusable UI components in `src/Components/`
+2. Create a dedicated folder for each component
+3. Include a matching CSS module file
+4. Export component as default
+5. Use context for global state access
+6. Implement prop validation where appropriate
+</Note>
+
+<Warning>
+Always use CSS modules for component styling to avoid naming conflicts. Each component should import its own `.module.css` file.
+</Warning>

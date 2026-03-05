@@ -1,0 +1,284 @@
+---
+title: Learning Interface
+description: Navigate your student dashboard, access courses, and manage your learning experience
+---
+
+## Student Dashboard
+
+Your student dashboard is the central hub for managing your enrolled courses and tracking your learning progress.
+
+### Accessing Your Dashboard
+
+Navigate to `/student/{your-user-id}` or click **"Ir al curso"** from any purchased course card.
+
+### Dashboard Overview
+
+When you first access your dashboard, you'll see:
+
+```plaintext
+¡[Your Name], bienvenido a tu área de estudio!
+Alumno n°: [Your Student ID]
+```
+
+<Note>
+Your student ID is a unique identifier assigned to your account for tracking purposes.
+</Note>
+
+## Dashboard Features
+
+The dashboard provides centralized access to:
+
+- **Course Access** - View and join all your enrolled courses
+- **Progress Tracking** - Monitor completion status (feature in development)
+- **Course Rating** - Provide feedback on completed courses
+- **Time Tracking** - View total hours dedicated to learning
+
+### What You Can Do
+
+Your student area allows you to:
+
+<CardGroup cols={2}>
+  <Card title="Access Your Courses" icon="book-open">
+    View enrolled courses, check progress, and join classes
+  </Card>
+  
+  <Card title="Rate Courses" icon="star">
+    Once you complete a course, rate it and leave comments to help other students
+  </Card>
+  
+  <Card title="Track Progress" icon="chart-line">
+    Monitor your progress and view total hours dedicated to learning
+  </Card>
+  
+  <Card title="Contact Instructors" icon="envelope">
+    Reach out to instructors with questions or feedback
+  </Card>
+</CardGroup>
+
+## Your Enrolled Courses
+
+### Course Cards
+
+Each enrolled course appears as a card displaying:
+
+- **Course thumbnail** - Visual identifier
+- **Course title** - Name of the course
+- **Progress indicator** - Completion percentage (in development)
+- **Rating button** - Option to rate or modify your rating
+- **Access button** - "Clases disponibles" (Available Classes)
+
+### Course Display
+
+Courses are filtered to show only:
+- Courses you've purchased through payment records
+- Enabled courses (active and accessible)
+
+<Tip>
+If you don't see your recently purchased course, try refreshing the page to update your enrollment status.
+</Tip>
+
+## Accessing Course Content
+
+### Viewing Class List
+
+<Steps>
+  <Step title="Select a course">
+    From your dashboard, click **"Clases disponibles"** (Available Classes) on any course card.
+  </Step>
+  
+  <Step title="View course structure">
+    You'll see the complete curriculum organized by sections.
+  </Step>
+  
+  <Step title="Select a lesson">
+    Click on any lesson to start watching the video lecture.
+  </Step>
+</Steps>
+
+### Class List Interface
+
+The class list page displays:
+
+```plaintext
+[Course Title]
+
+Sección 1
+  Introduction to the Topic     05:30
+  Basic Concepts                12:45
+  Practice Exercise             08:20
+
+Sección 2
+  Advanced Techniques           15:00
+  Real-world Applications       20:15
+
+5 clases - duración del curso: 1 h 3 m 50 s
+```
+
+<Note>
+Lessons are organized by sections for structured, sequential learning. Each lesson shows its duration in `MM:SS` format.
+</Note>
+
+### Navigation Options
+
+From the class list:
+
+- **Volver** (Back) - Return to your student dashboard
+- **Contactar al instructor** (Contact Instructor) - Send a message to the course creator
+- **Click on any lesson** - Start the video lecture
+
+## Video Learning Interface
+
+### Lecture Player
+
+When you select a lesson, you're taken to the lecture page featuring:
+
+- **Lesson title** - Name of the current lesson
+- **Video player** - Interactive video with controls
+- **Playback controls** - Play, pause, volume, seek, fullscreen
+
+### Video Player Features
+
+The ReactPlayer component provides:
+
+- **Standard controls** - Play/pause, volume, timeline scrubbing
+- **Quality settings** - Automatic quality adjustment
+- **Fullscreen mode** - Immersive viewing experience
+- **Keyboard shortcuts** - Space to play/pause, arrows to seek
+
+<Tip>
+Use fullscreen mode for distraction-free learning, especially for detailed demonstrations.
+</Tip>
+
+### Lesson Navigation
+
+During a lecture:
+
+```jsx
+<header>
+  <h2>{lesson.title}</h2>
+  <Button text="Volver" onClick={goBack} />
+</header>
+```
+
+- **Title display** - Always visible at the top
+- **Back button** - Return to the class list to select another lesson
+
+<Note>
+Currently, sequential lesson navigation (next/previous) requires returning to the class list.
+</Note>
+
+## Rating and Reviewing Courses
+
+### Submitting a Rating
+
+<Steps>
+  <Step title="Locate the rating button">
+    On your course card in the dashboard, click the rating icon button.
+  </Step>
+  
+  <Step title="Select star rating">
+    Choose from 1 to 5 stars based on your experience:
+    - 1 star: Poor
+    - 2 stars: Fair
+    - 3 stars: Good
+    - 4 stars: Very Good
+    - 5 stars: Excellent
+  </Step>
+  
+  <Step title="Write a comment">
+    Add a text review describing your experience and what you learned.
+  </Step>
+  
+  <Step title="Submit">
+    Confirm your rating to help future students make informed decisions.
+  </Step>
+</Steps>
+
+### Modifying Ratings
+
+If you've already rated a course:
+
+- The button text changes to **"Modificar Calificación"** (Modify Rating)
+- Click to update your star rating or comment
+- Your previous rating is replaced with the new one
+
+<Warning>
+Rating modifications replace your original review entirely. Make sure your updated review reflects your current assessment.
+</Warning>
+
+## Technical Details
+
+### Data Structure
+
+Enrolled courses are stored in your user profile:
+
+```javascript
+// Course retrieval from payments
+const enrolledCourses = userData.Payments.flatMap(payment => 
+  payment.Courses.map(course => ({
+    id: course.id,
+    title: course.title,
+    description: course.description,
+    lesson: course.lesson,
+    ratings: course.ratings,
+    // ... other course properties
+  }))
+);
+```
+
+### Rating Submission
+
+```javascript
+// POST rating to API
+POST /api/rating
+{
+  courseId: course_id,
+  userId: user_id,
+  rating: 1-5,
+  comment: "Review text"
+}
+```
+
+### Navigation Paths
+
+Key routes in the learning interface:
+
+```plaintext
+/student/{userId}                          # Dashboard
+/student/classList/{courseId}              # Class list
+/student/classList/lecture/{lessonId}      # Video player
+/mailer/{instructorId}                     # Contact instructor
+```
+
+## Progress Tracking (In Development)
+
+Future progress tracking features will include:
+
+- Visual progress bars on course cards
+- Percentage completion tracking
+- Lesson completion markers
+- Total time spent per course
+
+<Tip>
+While progress tracking is being developed, you can manually track your completion by noting which lessons you've watched.
+</Tip>
+
+## Best Practices
+
+### Effective Learning
+
+- Watch lessons in sequential order for best comprehension
+- Take notes during video lectures
+- Re-watch complex sections as needed
+- Rate courses after completion to help the community
+
+### Technical Tips
+
+- Ensure stable internet connection for smooth video playback
+- Use fullscreen mode for detailed visual content
+- Clear browser cache if videos don't load properly
+- Contact instructors if you encounter content issues
+
+<Card title="Rate Your Courses" icon="star" href="/students/ratings-reviews">
+  Learn more about providing valuable feedback through ratings and reviews.
+</Card>

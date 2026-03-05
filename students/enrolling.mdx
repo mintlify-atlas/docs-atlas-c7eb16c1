@@ -1,0 +1,257 @@
+---
+title: Enrolling in Courses
+description: Complete guide to viewing course details, adding to cart, and purchasing courses
+---
+
+## Course Details Page
+
+Before enrolling in a course, you can view comprehensive information about its content, structure, and requirements.
+
+### Accessing Course Details
+
+<Steps>
+  <Step title="Browse courses">
+    Navigate to the courses catalog and browse available courses.
+  </Step>
+  
+  <Step title="Select a course">
+    Click on any course card to open the detailed course view.
+  </Step>
+  
+  <Step title="Review course information">
+    Examine the course curriculum, duration, ratings, and instructor details.
+  </Step>
+</Steps>
+
+## Understanding Course Structure
+
+### Course Information
+
+The course detail page displays:
+
+- **Course image** - Featured visual for the course
+- **Title** - Full course name
+- **Description** - Detailed overview of what you'll learn
+- **Total classes** - Number of lessons included
+- **Total duration** - Complete course length (e.g., "5 h 30 m 45 s")
+
+### Curriculum by Sections
+
+Courses are organized into sections for structured learning:
+
+```plaintext
+Sección 1
+  ├─ Introduction to the Topic     (05:30)
+  ├─ Basic Concepts                (12:45)
+  └─ Practice Exercise             (08:20)
+
+Sección 2
+  ├─ Advanced Techniques           (15:00)
+  └─ Real-world Applications       (20:15)
+```
+
+Each lesson shows:
+- Lesson title
+- Duration in `MM:SS` format
+
+<Tip>
+Scroll through all sections to understand the complete course structure before enrolling.
+</Tip>
+
+## Viewing Ratings and Reviews
+
+### Course Ratings
+
+Click the **"Ver calificaciones"** (View Ratings) button to see:
+
+- Student ratings (1-5 stars)
+- Written comments and feedback
+- Number of total reviews
+
+Ratings are displayed in a formatted table:
+
+| # | Rating | Comment |
+|---|--------|----------|
+| 1 | 5 stars | Excellent course! |
+| 2 | 4 stars | Very informative |
+
+<Note>
+Ratings help you make informed decisions about course quality and relevance.
+</Note>
+
+## Enrollment Options
+
+Depending on your relationship to the course, you'll see different actions:
+
+### If You Own the Course
+
+<Card title="Already Purchased" icon="check">
+  Click **"Ir al curso"** (Go to Course) to access your enrolled course directly.
+</Card>
+
+### If You're the Instructor
+
+<Card title="Your Course" icon="chalkboard-user">
+  Click **"Ir al panel de instructor"** (Go to Instructor Panel) to manage your course.
+</Card>
+
+### If You Haven't Enrolled
+
+You have two purchasing options:
+
+#### Option 1: Add to Cart
+
+<Steps>
+  <Step title="Click 'Agregar al carrito'">
+    Adds the course to your shopping cart for later checkout.
+  </Step>
+  
+  <Step title="Continue browsing">
+    You're redirected to the cart page, but can return to browse more courses.
+  </Step>
+  
+  <Step title="Checkout when ready">
+    Purchase multiple courses together from your cart.
+  </Step>
+</Steps>
+
+#### Option 2: Buy Now
+
+<Steps>
+  <Step title="Click 'Comprar' (Buy)">
+    For immediate purchase of this course.
+  </Step>
+  
+  <Step title="Automatic cart addition">
+    The course is added to your cart automatically.
+  </Step>
+  
+  <Step title="Proceed to checkout">
+    You're taken directly to the cart page to complete payment.
+  </Step>
+</Steps>
+
+<Note>
+If you're not logged in, clicking **"Comprar"** redirects you to the login page first.
+</Note>
+
+## Shopping Cart System
+
+### Cart Overview
+
+Hover over the cart icon in the navigation to see:
+
+- **Cart preview** - Quick view of added courses
+- **Course names and prices** - Individual pricing
+- **Total price** - Sum of all cart items
+- **Item count badge** - Number of courses in cart
+
+### Managing Cart Items
+
+From the cart modal:
+
+<Steps>
+  <Step title="Review items">
+    See all courses added to your cart with individual prices.
+  </Step>
+  
+  <Step title="Remove unwanted courses">
+    Click **"Eliminar"** (Remove) next to any course to delete it.
+  </Step>
+  
+  <Step title="Confirm removal">
+    A confirmation dialog appears to prevent accidental deletions.
+  </Step>
+</Steps>
+
+<Warning>
+Removing a course from the cart requires confirmation. This action cannot be undone without re-adding the course.
+</Warning>
+
+## Pricing Calculation
+
+Course prices may include discounts:
+
+```javascript
+// Price calculation
+const discountedPrice = 
+  originalPrice - (originalPrice * percentageDiscount / 100);
+
+// Example:
+// Original: $100
+// Discount: 20%
+// Final: $80.00
+```
+
+The system automatically applies:
+- Percentage discounts for courses on sale
+- Rounded prices to 2 decimal places
+- Currency format: `US$XX.XX`
+
+## Checkout Process
+
+### Completing Your Purchase
+
+<Steps>
+  <Step title="Navigate to cart">
+    Click **"Ir a pagar"** (Go to Payment) from the cart modal or page.
+  </Step>
+  
+  <Step title="Review order">
+    Verify all courses and total price before proceeding.
+  </Step>
+  
+  <Step title="Complete payment">
+    Follow the payment process to finalize your enrollment.
+  </Step>
+  
+  <Step title="Confirmation">
+    Upon successful payment, you'll see: "¡Compra Exitosa!" (Purchase Successful!)
+  </Step>
+</Steps>
+
+### Post-Purchase
+
+After successful enrollment:
+
+- **Email confirmation** - Receipt sent to your registered email
+- **Course access** - Immediate access to course materials
+- **Dashboard update** - Courses appear in your student dashboard
+
+<Card title="Access Your Courses" icon="graduation-cap" href="/students/learning-interface">
+  Click **"Ir al curso"** (Go to Course) from the confirmation page to start learning.
+</Card>
+
+## Technical Implementation
+
+The enrollment system uses:
+
+```javascript
+// Cart management
+dispatch({ type: 'ADD_TO_CART', payload: productToAddToCart });
+dispatch({ type: 'REMOVE_FROM_CART', payload: productId });
+dispatch({ type: 'CLEAR', payload: [] });
+
+// Payment processing
+POST /api/payment/cart
+{
+  cart: [...courses],
+  userId: session.id,
+  email: session.email,
+  paymentId: payment_id
+}
+```
+
+<Tip>
+Cart data persists in localStorage, so your selections remain even if you navigate away from the page.
+</Tip>
+
+## Navigation Options
+
+From the course details page:
+
+- **Volver** (Back) - Return to the previous page
+- **Agregar al carrito** - Add to shopping cart
+- **Comprar** - Buy immediately
+- **Ir al curso** - Access enrolled course (if purchased)
+- **Ir al panel de instructor** - Manage course (if you're the instructor)

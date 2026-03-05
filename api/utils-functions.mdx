@@ -1,0 +1,755 @@
+---
+title: 'Utility Functions'
+description: 'API reference for EducaStream utility functions'
+---
+
+## Overview
+
+EducaStream provides a comprehensive set of utility functions for managing users, courses, payments, and data validation. All API calls use Axios and are configured to work with the backend endpoints.
+
+---
+
+## Data Fetching Functions
+
+### getAllCourses
+
+Fetches all courses from the database and stores them in local storage, sorted by creation date (newest first).
+
+<ParamField path="none" type="void">
+  This function takes no parameters
+</ParamField>
+
+<ResponseField name="data" type="array">
+  Array of course objects sorted by `createdAt` in descending order
+  
+  <ResponseField name="id" type="string">
+    Unique course identifier
+  </ResponseField>
+  
+  <ResponseField name="title" type="string">
+    Course title
+  </ResponseField>
+  
+  <ResponseField name="description" type="string">
+    Course description
+  </ResponseField>
+  
+  <ResponseField name="createdAt" type="string">
+    ISO timestamp of course creation
+  </ResponseField>
+</ResponseField>
+
+**Source:** `src/utils/getAllCourses.js:3`
+
+```javascript
+import { getAllCourses } from './utils/getAllCourses';
+
+// Fetch and store all courses
+const courses = await getAllCourses();
+console.log(courses); // Sorted by newest first
+```
+
+---
+
+### getAllCategories
+
+Retrieves all course categories from the database, sorted alphabetically by name.
+
+<ParamField path="none" type="void">
+  This function takes no parameters
+</ParamField>
+
+<ResponseField name="data" type="array">
+  Array of category objects sorted alphabetically
+  
+  <ResponseField name="name" type="string">
+    Category name
+  </ResponseField>
+  
+  <ResponseField name="id" type="string">
+    Category identifier
+  </ResponseField>
+</ResponseField>
+
+**Source:** `src/utils/getAllCategories.js:3`
+
+```javascript
+import { getAllCategories } from './utils/getAllCategories';
+
+// Used in App.jsx on initial load
+useEffect(() => {
+  getAllCategories();
+}, []);
+```
+
+---
+
+### getAllUser
+
+Fetches all users from the database.
+
+<ParamField path="none" type="void">
+  This function takes no parameters
+</ParamField>
+
+<ResponseField name="data" type="array">
+  Array of user objects
+</ResponseField>
+
+**Source:** `src/utils/getAllUser.js:3`
+
+```javascript
+import { getAllUser } from './utils/getAllUser';
+
+// Example from App.jsx
+useEffect(() => {
+  getAllUser();
+  getAllCourses();
+  getAllCategories();
+}, []);
+```
+
+---
+
+### getUserById
+
+Retrieves a specific user by their unique ID.
+
+<ParamField path="id" type="string" required>
+  The unique identifier of the user to fetch
+</ParamField>
+
+<ResponseField name="data" type="object">
+  User object with all user details
+  
+  <ResponseField name="id" type="string">
+    Unique user identifier
+  </ResponseField>
+  
+  <ResponseField name="email" type="string">
+    User email address
+  </ResponseField>
+  
+  <ResponseField name="user_name" type="string">
+    Username
+  </ResponseField>
+  
+  <ResponseField name="Payments" type="array">
+    Array of user's payment records
+  </ResponseField>
+</ResponseField>
+
+**Source:** `src/utils/getUserById.js:3`
+
+```javascript
+import { getUserById } from './utils/getUserById';
+
+const user = await getUserById('ab518b48-1a30-4d10-b525-479167e4fdd4');
+```
+
+---
+
+### getUser
+
+Fetches a user by their email address.
+
+<ParamField path="email" type="string" required>
+  The email address of the user to retrieve
+</ParamField>
+
+<ResponseField name="data" type="object">
+  User object matching the email
+</ResponseField>
+
+**Source:** `src/utils/getUser.js:3`
+
+```javascript
+import { getUser } from './utils/getUser';
+
+const user = await getUser('prueba@example.com');
+```
+
+---
+
+### getOnSaleCourses
+
+Retrieves all courses currently on sale.
+
+<ParamField path="none" type="void">
+  This function takes no parameters
+</ParamField>
+
+<ResponseField name="data" type="array">
+  Array of course objects with active sales/discounts
+</ResponseField>
+
+**Source:** `src/utils/getOnSaleCourses.js:3`
+
+```javascript
+import { getOnSaleCourses } from './utils/getOnSaleCourses';
+
+const saleCourses = await getOnSaleCourses();
+```
+
+---
+
+### getAllPayments
+
+Fetches all payment records from the database.
+
+<ParamField path="none" type="void">
+  This function takes no parameters
+</ParamField>
+
+<ResponseField name="data" type="array">
+  Array of payment objects
+  
+  <ResponseField name="Courses" type="array">
+    Courses included in the payment
+  </ResponseField>
+</ResponseField>
+
+**Source:** `src/utils/getAllPayments.js:3`
+
+```javascript
+import { getAllPayments } from './utils/getAllPayments';
+
+const payments = await getAllPayments();
+```
+
+---
+
+## Data Mutation Functions
+
+<Tabs>
+  <Tab title="User Operations">
+    ### postUser
+    
+    Creates a new user in the database.
+    
+    <ParamField path="user" type="object" required>
+      User object containing registration data
+      
+      <ParamField path="email" type="string" required>
+        User's email address
+      </ParamField>
+      
+      <ParamField path="password" type="string" required>
+        User's password
+      </ParamField>
+      
+      <ParamField path="user_name" type="string">
+        Username
+      </ParamField>
+      
+      <ParamField path="first_name" type="string">
+        User's first name
+      </ParamField>
+      
+      <ParamField path="last_name" type="string">
+        User's last name
+      </ParamField>
+      
+      <ParamField path="birthdate" type="string">
+        User's birthdate in ISO format
+      </ParamField>
+      
+      <ParamField path="role_instructor" type="boolean">
+        Whether user has instructor role
+      </ParamField>
+      
+      <ParamField path="role_student" type="boolean">
+        Whether user has student role
+      </ParamField>
+    </ParamField>
+    
+    <ResponseField name="data" type="object">
+      Created user object
+    </ResponseField>
+    
+    **Source:** `src/utils/postUser.js:3`
+    
+    ```javascript
+    import { postUser } from './utils/postUser';
+    
+    const newUser = await postUser({
+      email: "student@example.com",
+      password: "securePassword123",
+      user_name: "johndoe",
+      first_name: "John",
+      last_name: "Doe",
+      role_student: true,
+      role_instructor: false
+    });
+    ```
+    
+    ---
+    
+    ### updateUser
+    
+    Updates an existing user's information.
+    
+    <ParamField path="user" type="object" required>
+      User object containing fields to update (must include user ID)
+    </ParamField>
+    
+    <ResponseField name="data" type="object">
+      Updated user object
+    </ResponseField>
+    
+    **Source:** `src/utils/updateUser.js:3`
+    
+    ```javascript
+    import { updateUser } from './utils/updateUser';
+    
+    const updated = await updateUser({
+      id: "ab518b48-1a30-4d10-b525-479167e4fdd4",
+      first_name: "UpdatedName"
+    });
+    ```
+  </Tab>
+  
+  <Tab title="Course Operations">
+    ### sendData (Create Course)
+    
+    Creates a new course in the database.
+    
+    <ParamField path="course" type="object" required>
+      Course object containing course details
+      
+      <ParamField path="title" type="string" required>
+        Course title (minimum 3 characters)
+      </ParamField>
+      
+      <ParamField path="description" type="string" required>
+        Course description (20-90 characters)
+      </ParamField>
+      
+      <ParamField path="category" type="string" required>
+        Course category
+      </ParamField>
+      
+      <ParamField path="instructor_id" type="string" required>
+        UUID of the instructor creating the course
+      </ParamField>
+      
+      <ParamField path="image" type="string">
+        URL to course thumbnail image
+      </ParamField>
+      
+      <ParamField path="price" type="number" required>
+        Course price (minimum $0.50)
+      </ParamField>
+      
+      <ParamField path="sections" type="number" required>
+        Number of sections (minimum 1)
+      </ParamField>
+    </ParamField>
+    
+    <ResponseField name="data" type="object">
+      Created course object
+    </ResponseField>
+    
+    **Source:** `src/utils/postCreateCourse.js:3`
+    
+    ```javascript
+    import { sendData } from './utils/postCreateCourse';
+    
+    const newCourse = await sendData({
+      title: "Advanced JavaScript",
+      description: "Learn modern JavaScript techniques and best practices",
+      category: "Programación",
+      instructor_id: "b05d6c8d-0eaa-4e99-8b75-548f5466714e",
+      price: 49.99,
+      sections: 5,
+      image: "https://example.com/course-image.jpg"
+    });
+    ```
+    
+    ---
+    
+    ### updateCourse
+    
+    Updates an existing course with new data.
+    
+    <ParamField path="newDataCourse" type="object" required>
+      Course update object
+      
+      <ParamField path="id" type="string" required>
+        Course ID to update
+      </ParamField>
+      
+      <ParamField path="title" type="string">
+        Updated course title
+      </ParamField>
+      
+      <ParamField path="image" type="string">
+        Updated course image URL
+      </ParamField>
+      
+      <ParamField path="enabled" type="boolean">
+        Whether course is enabled
+      </ParamField>
+      
+      <ParamField path="onSale" type="boolean">
+        Whether course is on sale
+      </ParamField>
+      
+      <ParamField path="percentageDiscount" type="number">
+        Discount percentage if on sale
+      </ParamField>
+      
+      <ParamField path="banned" type="boolean">
+        Whether course is banned
+      </ParamField>
+    </ParamField>
+    
+    <ResponseField name="data" type="object">
+      Updated course object
+    </ResponseField>
+    
+    **Source:** `src/utils/updateCourse.js:3`
+    
+    ```javascript
+    import updateCourse from './utils/updateCourse';
+    
+    const updated = await updateCourse({
+      id: "course-uuid",
+      onSale: true,
+      percentageDiscount: 20,
+      enabled: true
+    });
+    ```
+  </Tab>
+  
+  <Tab title="Lesson & Payment">
+    ### updateLesson
+    
+    Updates lesson information for a course.
+    
+    <ParamField path="newDataLesson" type="object" required>
+      Lesson update object containing fields to modify
+      
+      <ParamField path="id" type="string" required>
+        Lesson ID to update
+      </ParamField>
+      
+      <ParamField path="title" type="string">
+        Lesson title
+      </ParamField>
+      
+      <ParamField path="description" type="string">
+        Lesson description
+      </ParamField>
+      
+      <ParamField path="video_url" type="string">
+        Video URL for the lesson
+      </ParamField>
+      
+      <ParamField path="section" type="number">
+        Section number
+      </ParamField>
+    </ParamField>
+    
+    <ResponseField name="data" type="object">
+      Updated lesson object
+    </ResponseField>
+    
+    **Source:** `src/utils/updateLesson.js:3`
+    
+    ```javascript
+    import updateLesson from './utils/updateLesson';
+    
+    const updatedLesson = await updateLesson({
+      id: "lesson-uuid",
+      title: "Updated Lesson Title",
+      video_url: "https://youtube.com/watch?v=new-video"
+    });
+    ```
+    
+    ---
+    
+    ### postRating
+    
+    Submits a rating and comment for a course.
+    
+    <ParamField path="course_id" type="string" required>
+      UUID of the course being rated
+    </ParamField>
+    
+    <ParamField path="user_id" type="string" required>
+      UUID of the user submitting the rating
+    </ParamField>
+    
+    <ParamField path="rating" type="number" required>
+      Rating value (typically 1-5)
+    </ParamField>
+    
+    <ParamField path="comment" type="string" required>
+      Review comment text
+    </ParamField>
+    
+    <ResponseField name="data" type="object">
+      Created rating object
+    </ResponseField>
+    
+    **Source:** `src/utils/postRating.js:3`
+    
+    ```javascript
+    import { postRating } from './utils/postRating';
+    
+    const rating = await postRating(
+      "course-uuid",
+      "user-uuid",
+      5,
+      "Excellent course! Highly recommended."
+    );
+    ```
+    
+    ---
+    
+    ### postPaymentCart
+    
+    Processes payment for courses in the cart and enrolls the user.
+    
+    <ParamField path="cart" type="array" required>
+      Array of course objects to purchase
+    </ParamField>
+    
+    <ParamField path="id" type="string" required>
+      User ID making the purchase
+    </ParamField>
+    
+    <ParamField path="email" type="string" required>
+      User's email address
+    </ParamField>
+    
+    <ParamField path="id_payment" type="string" required>
+      Payment transaction ID from payment gateway
+    </ParamField>
+    
+    <ResponseField name="data" type="object">
+      Payment confirmation object
+    </ResponseField>
+    
+    **Source:** `src/utils/postPaymentCart.js:3`
+    
+    ```javascript
+    import { postPaymentCart } from './utils/postPaymentCart';
+    
+    const payment = await postPaymentCart(
+      [{ id: "course-1", title: "JavaScript" }],
+      "user-uuid",
+      "user@example.com",
+      "payment-transaction-id"
+    );
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Validation Functions
+
+### validation
+
+Validates course creation/update form data.
+
+<ParamField path="props" type="object" required>
+  Object containing course form fields
+  
+  <ParamField path="title" type="string" required>
+    Course title (min 3 characters)
+  </ParamField>
+  
+  <ParamField path="description" type="string" required>
+    Course description (20-90 characters)
+  </ParamField>
+  
+  <ParamField path="category" type="string" required>
+    Course category
+  </ParamField>
+  
+  <ParamField path="sections" type="number" required>
+    Number of sections (min 1)
+  </ParamField>
+  
+  <ParamField path="price" type="number" required>
+    Course price (min $0.50)
+  </ParamField>
+</ParamField>
+
+<ResponseField name="errors" type="object">
+  Object containing validation error messages keyed by field name
+  
+  <ResponseField name="title" type="string">
+    Title validation error message
+  </ResponseField>
+  
+  <ResponseField name="description" type="string">
+    Description validation error message
+  </ResponseField>
+  
+  <ResponseField name="category" type="string">
+    Category validation error message
+  </ResponseField>
+  
+  <ResponseField name="sections" type="string">
+    Sections validation error message
+  </ResponseField>
+  
+  <ResponseField name="price" type="string">
+    Price validation error message
+  </ResponseField>
+</ResponseField>
+
+**Source:** `src/utils/validation.js:1`
+
+```javascript
+import { validation } from './utils/validation';
+
+const formData = {
+  title: "JS",  // Too short
+  description: "Short desc",  // Too short
+  category: "Programming",
+  sections: 3,
+  price: 29.99
+};
+
+const errors = validation(formData);
+// Returns: {
+//   title: "Debe tener al menos 3 caracteres.",
+//   description: "La descripción debe tener al menos 20 caracteres."
+// }
+```
+
+---
+
+### validationLesson
+
+Validates lesson creation/update form data.
+
+<ParamField path="props" type="object" required>
+  Object containing lesson form fields
+  
+  <ParamField path="title" type="string" required>
+    Lesson title (min 3 characters)
+  </ParamField>
+  
+  <ParamField path="description" type="string" required>
+    Lesson description (min 20 characters)
+  </ParamField>
+  
+  <ParamField path="section" type="number" required>
+    Section number (must be >= 1)
+  </ParamField>
+  
+  <ParamField path="video_url" type="string" required>
+    Video URL for the lesson
+  </ParamField>
+</ParamField>
+
+<ResponseField name="errors" type="object">
+  Object containing validation error messages keyed by field name
+</ResponseField>
+
+**Source:** `src/utils/validation.js:39`
+
+```javascript
+import { validationLesson } from './utils/validation';
+
+const lessonData = {
+  title: "Introduction",
+  description: "This lesson covers the basics of JavaScript",
+  section: 1,
+  video_url: "https://youtube.com/watch?v=abc123"
+};
+
+const errors = validationLesson(lessonData);
+if (Object.keys(errors).length === 0) {
+  // Validation passed
+}
+```
+
+---
+
+## Utility Functions
+
+### clear
+
+Clears all user session data from localStorage and reloads the page. Used for logout functionality.
+
+<ParamField path="none" type="void">
+  This function takes no parameters
+</ParamField>
+
+**Source:** `src/utils/clear.js:1`
+
+```javascript
+import { clear } from './utils/clear';
+
+// Logout user and clear session
+clear();
+// Removes: userOnSession, logged, payment
+// Then reloads the page
+```
+
+---
+
+### filterBack
+
+Filters courses by a specific parameter on the backend.
+
+<ParamField path="params" type="object">
+  Filter parameters object
+  
+  <ParamField path="type" type="string">
+    Filter type (e.g., "category", "instructor")
+  </ParamField>
+  
+  <ParamField path="value" type="string">
+    Filter value
+  </ParamField>
+</ParamField>
+
+**Source:** `src/utils/FiltersBc.js:3`
+
+```javascript
+import { filterBack } from './utils/FiltersBc';
+
+// Filter courses by category
+await filterBack({
+  type: "category",
+  value: "Programación"
+});
+```
+
+---
+
+## Error Handling
+
+All API functions implement try-catch error handling:
+
+```javascript
+try {
+  const response = await axios.get('/endpoint');
+  if (response.status !== 200) {
+    throw new Error(`HTTP error! Status: ${response.status}`);
+  }
+  return response.data;
+} catch (error) {
+  console.error("Error fetching data:", error);
+  throw error;
+}
+```
+
+Payment functions include user-friendly alerts:
+
+```javascript
+try {
+  const { data } = await axios.post("payment/enrollment", payload);
+  return data;
+} catch (error) {
+  window.alert("Error en la pasarela de pago");
+}
+```

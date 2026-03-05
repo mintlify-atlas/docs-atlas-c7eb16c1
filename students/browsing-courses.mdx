@@ -1,0 +1,153 @@
+---
+title: Browsing Courses
+description: Learn how to browse, search, and filter courses in EducaStream
+---
+
+## Overview
+
+EducaStream's course catalog provides powerful tools to help you find the perfect courses for your learning journey. The platform displays courses in a paginated grid with comprehensive filtering and sorting options.
+
+## Searching for Courses
+
+### Search by Title
+
+Use the search bar to find courses by name:
+
+<Steps>
+  <Step title="Locate the search input">
+    At the top of the courses page, you'll find a search bar with a magnifying glass icon.
+  </Step>
+  
+  <Step title="Enter your search term">
+    Type the course title or keywords you're looking for. Results will update automatically as you type.
+  </Step>
+  
+  <Step title="Clear the search">
+    Delete your search text or click the "Restablecer" (Reset) button to return to all courses.
+  </Step>
+</Steps>
+
+<Note>
+The search filters courses in real-time by making API requests to `/courses?title={searchTerm}`
+</Note>
+
+## Filtering Courses
+
+### Filter by Category
+
+Narrow down courses by their subject category:
+
+<Steps>
+  <Step title="Open the category dropdown">
+    Click on the "Categorías" dropdown menu in the filters section.
+  </Step>
+  
+  <Step title="Select a category">
+    Choose from available categories like Programming, Design, Business, etc.
+  </Step>
+  
+  <Step title="View filtered results">
+    The course list will update to show only courses in your selected category.
+  </Step>
+</Steps>
+
+The system makes an API call to `/courses?category={categoryName}` to retrieve filtered results.
+
+### Sort by Price
+
+Organize courses based on pricing:
+
+1. Click the "Ordenar por precio" (Sort by Price) dropdown
+2. Select your preferred sorting option:
+   - **Menor a mayor** (ASC) - Low to high price
+   - **Mayor a menor** (DESC) - High to low price
+
+<Tip>
+Use the price filter to find courses within your budget or discover premium offerings.
+</Tip>
+
+## Resetting Filters
+
+If you've applied multiple filters and want to start fresh:
+
+- Click the **"Restablecer"** (Reset) button
+- All filters (category, price sorting, and search) will be cleared
+- The course list returns to its default state
+
+## Course Display
+
+### Course Cards
+
+Each course is displayed in a card format showing:
+
+- **Course image** - Visual thumbnail of the course
+- **Title and category** - Course name and subject area
+- **Description** - Brief overview of course content
+- **Instructor information** - Created by [Instructor Name]
+- **Rating and reviews** - Star rating and comment count
+- **Course details** - Number of classes and total duration
+- **Pricing** - Current price (with discount if on sale)
+- **Action buttons** - Options to add to cart or purchase
+
+### Pricing Display
+
+Courses may show:
+- Regular price: `US$99.99`
+- Discounted price (if on sale): ~~`US$99.99`~~ `US$79.99`
+
+<Note>
+The discounted price is calculated based on the `percentageDiscount` field applied to courses on sale.
+</Note>
+
+## Pagination
+
+### Navigating Pages
+
+The course catalog displays **10 courses per page**:
+
+- Use **Prev** and **Next** buttons to navigate between pages
+- Click specific page numbers to jump directly to that page
+- Up to **5 page numbers** are displayed at a time
+- The current page is highlighted for easy reference
+
+<Tip>
+When navigating to a new page, the view automatically scrolls to the top for better browsing experience.
+</Tip>
+
+## Course Availability
+
+Only **enabled courses** are visible in the catalog. If you see "No hay cursos disponibles" (No courses available), it means:
+- No courses match your current filters
+- There are no active courses in the system
+
+## Next Steps
+
+Once you've found a course you're interested in:
+
+<CardGroup cols={2}>
+  <Card title="View Course Details" icon="eye" href="/students/enrolling">
+    Click on a course card to see detailed information, curriculum, and enrollment options
+  </Card>
+  
+  <Card title="Add to Cart" icon="cart-shopping" href="/students/enrolling">
+    Add courses to your cart for bulk purchasing or checkout immediately
+  </Card>
+</CardGroup>
+
+## Technical Details
+
+For developers integrating with the course browsing system:
+
+```javascript
+// Pagination configuration
+const ITEMS_PER_PAGE = 10;
+const MAX_PAGES_DISPLAYED = 5;
+
+// API endpoints
+GET /courses?category={categoryName}
+GET /courses?title={searchTerm}
+```
+
+<Tip>
+Course data is cached in `localStorage` under the key `coursesData` for improved performance.
+</Tip>

@@ -1,0 +1,320 @@
+---
+title: 'Development Setup'
+description: 'Complete guide to setting up EducaStream locally'
+---
+
+## Prerequisites
+
+Before you begin, ensure you have the following installed:
+
+<CardGroup cols={2}>
+  <Card title="Node.js" icon="node-js">
+    Version 16.x or higher
+  </Card>
+  <Card title="Package Manager" icon="box">
+    npm, yarn, or pnpm
+  </Card>
+  <Card title="Git" icon="git">
+    For version control
+  </Card>
+  <Card title="Code Editor" icon="code">
+    VS Code recommended
+  </Card>
+</CardGroup>
+
+## Installation
+
+<Steps>
+  <Step title="Clone the Repository">
+    Clone the EducaStream repository to your local machine:
+    
+    ```bash
+    git clone <repository-url>
+    cd educastream
+    ```
+  </Step>
+
+  <Step title="Install Dependencies">
+    Install all required packages using your preferred package manager:
+    
+    <CodeGroup>
+    ```bash npm
+    npm install
+    ```
+
+    ```bash yarn
+    yarn install
+    ```
+
+    ```bash pnpm
+    pnpm install
+    ```
+    </CodeGroup>
+
+    This will install all dependencies from `package.json`, including:
+    - React 18.2.0
+    - Firebase 10.5.2
+    - Stripe 14.3.0
+    - React Router 6.17.0
+    - And more...
+  </Step>
+
+  <Step title="Environment Configuration">
+    Create a `.env` file in the root directory and configure your environment variables:
+    
+    ```bash
+    touch .env
+    ```
+
+    Add the following variables (see [Firebase Config](/dev/firebase-config) and [Stripe Integration](/dev/stripe-integration) for values):
+
+    ```bash
+    # Firebase Configuration
+    VITE_API_KEY=your_firebase_api_key
+    VITE_AUTH_DOMAIN=your_project.firebaseapp.com
+    VITE_PROJECT_ID=your_project_id
+    VITE_STORAGE_BUCKET=your_project.appspot.com
+    VITE_MESSAGING_SENDER_ID=your_sender_id
+    VITE_APP_ID=your_app_id
+
+    # Stripe Configuration (if needed for frontend)
+    VITE_STRIPE_PUBLIC_KEY=your_stripe_public_key
+    ```
+
+    <Warning>
+      Never commit your `.env` file to version control. Add it to `.gitignore`.
+    </Warning>
+  </Step>
+
+  <Step title="Start Development Server">
+    Launch the Vite development server:
+    
+    <CodeGroup>
+    ```bash npm
+    npm run dev
+    ```
+
+    ```bash yarn
+    yarn dev
+    ```
+
+    ```bash pnpm
+    pnpm dev
+    ```
+    </CodeGroup>
+
+    The application will start at `http://localhost:5173` (default Vite port).
+  </Step>
+</Steps>
+
+## Project Structure
+
+```
+educastream/
+├── src/
+│   ├── Components/          # Reusable UI components
+│   │   ├── NavBar/
+│   │   ├── Footer/
+│   │   ├── Cart/
+│   │   └── PayButton/
+│   ├── views/               # Page components
+│   │   ├── Layout/
+│   │   ├── Login/
+│   │   ├── Courses/
+│   │   ├── Student/
+│   │   ├── Instructor/
+│   │   └── dashboard/
+│   ├── context/             # React Context providers
+│   │   └── CartContext.jsx
+│   ├── firebase/            # Firebase configuration
+│   │   └── firebase.js
+│   ├── utils/               # Utility functions
+│   ├── App.jsx              # Main app component
+│   └── main.jsx             # Entry point
+├── public/                  # Static assets
+├── vite.config.js          # Vite configuration
+├── package.json            # Dependencies and scripts
+└── .env                    # Environment variables
+```
+
+## Backend Configuration
+
+The frontend connects to a Railway-hosted backend API. The base URL is configured in `main.jsx:8`:
+
+```javascript
+import axios from "axios";
+
+axios.defaults.baseURL = "https://backend-educastream-production.up.railway.app/";
+```
+
+<Info>
+  If you're running a local backend, update this URL to `http://localhost:YOUR_PORT`
+</Info>
+
+## Development Workflow
+
+### Running the Application
+
+<Tabs>
+  <Tab title="Development Mode">
+    Start the dev server with hot module replacement:
+    
+    ```bash
+    npm run dev
+    ```
+    
+    - Fast refresh on file changes
+    - Source maps for debugging
+    - Runs on `http://localhost:5173`
+  </Tab>
+
+  <Tab title="Production Build">
+    Build optimized production bundle:
+    
+    ```bash
+    npm run build
+    ```
+    
+    - Minified and optimized code
+    - Output in `dist/` directory
+    - Ready for deployment
+  </Tab>
+
+  <Tab title="Preview Build">
+    Preview the production build locally:
+    
+    ```bash
+    npm run preview
+    ```
+    
+    - Serves the built `dist/` folder
+    - Test production build before deployment
+  </Tab>
+
+  <Tab title="Linting">
+    Run ESLint to check code quality:
+    
+    ```bash
+    npm run lint
+    ```
+    
+    - Checks for code quality issues
+    - Enforces React best practices
+    - Max warnings: 0
+  </Tab>
+</Tabs>
+
+## Environment Variables
+
+EducaStream uses Vite's environment variable system. Variables must be prefixed with `VITE_` to be exposed to the client:
+
+<CodeGroup>
+```javascript Firebase Config
+const firebaseConfig = {
+  apiKey: import.meta.env.VITE_API_KEY,
+  authDomain: import.meta.env.VITE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_APP_ID,
+};
+```
+
+```bash .env File
+VITE_API_KEY=AIzaSy...
+VITE_AUTH_DOMAIN=your-app.firebaseapp.com
+VITE_PROJECT_ID=your-project-id
+VITE_STORAGE_BUCKET=your-app.appspot.com
+VITE_MESSAGING_SENDER_ID=123456789
+VITE_APP_ID=1:123456789:web:abc123
+```
+</CodeGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Port already in use">
+    If port 5173 is already in use, Vite will automatically try the next available port. You can also specify a custom port:
+    
+    ```javascript vite.config.js
+    export default defineConfig({
+      plugins: [react()],
+      server: {
+        port: 3000
+      }
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Module not found errors">
+    Delete `node_modules` and reinstall:
+    
+    ```bash
+    rm -rf node_modules package-lock.json
+    npm install
+    ```
+  </Accordion>
+
+  <Accordion title="Firebase initialization fails">
+    Ensure all Firebase environment variables are set correctly in `.env`:
+    
+    - Check for typos in variable names
+    - Verify all values from Firebase Console
+    - Restart dev server after changing `.env`
+  </Accordion>
+
+  <Accordion title="Axios network errors">
+    If API calls fail:
+    
+    1. Check backend is running
+    2. Verify the `axios.defaults.baseURL` in `main.jsx`
+    3. Check CORS settings on backend
+    4. Inspect network tab in browser DevTools
+  </Accordion>
+</AccordionGroup>
+
+## Verification
+
+After setup, verify everything works:
+
+<Steps>
+  <Step title="Check Dev Server">
+    Navigate to `http://localhost:5173` and verify the landing page loads
+  </Step>
+
+  <Step title="Test Navigation">
+    Click through different routes to ensure React Router is working
+  </Step>
+
+  <Step title="Check Console">
+    Open browser DevTools and check for any errors in the console
+  </Step>
+
+  <Step title="Test Login">
+    Navigate to `/login` and verify the authentication page renders
+  </Step>
+</Steps>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Configure Firebase" icon="fire" href="/dev/firebase-config">
+    Set up Firebase Storage and Authentication
+  </Card>
+  <Card title="Configure Stripe" icon="credit-card" href="/dev/stripe-integration">
+    Set up payment processing
+  </Card>
+  <Card title="Architecture" icon="diagram-project" href="/dev/architecture">
+    Learn about the application architecture
+  </Card>
+</CardGroup>
+
+## Additional Resources
+
+<Card title="Vite Documentation" icon="bolt" href="https://vitejs.dev">
+  Official Vite documentation for build configuration
+</Card>
+
+<Card title="React Documentation" icon="react" href="https://react.dev">
+  Official React documentation and guides
+</Card>

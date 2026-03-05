@@ -1,0 +1,247 @@
+---
+title: Creating Courses
+description: Learn how to create and publish your first course on EducaStream
+---
+
+As an instructor on EducaStream, you can create courses to share your knowledge with students worldwide. This guide walks you through the complete course creation process.
+
+## Getting Started
+
+To create a new course, navigate to your instructor dashboard and click the **"Crea tu curso"** (Create your course) button.
+
+<Note>
+You must be logged in as an instructor to access the course creation form.
+</Note>
+
+## Course Creation Process
+
+<Steps>
+  <Step title="Access the Course Form">
+    From your instructor dashboard at `/instructor/{your-id}`, click the "Crea tu curso" button to navigate to the course creation form.
+  </Step>
+  
+  <Step title="Fill in Course Details">
+    Complete all required fields in the course creation form. See the [Required Fields](#required-fields) section below for detailed information.
+  </Step>
+  
+  <Step title="Upload Course Image">
+    Select an image file for your course thumbnail. The image will be uploaded to Firebase Storage under `courses/{course-name}/`.
+  </Step>
+  
+  <Step title="Set Course Price">
+    Enter the course price in USD. The minimum price is $1.00 and maximum is $9,999.99.
+  </Step>
+  
+  <Step title="Submit Course">
+    Click the "Crear curso" button. Your course will be created and you'll be redirected to the courses page.
+  </Step>
+</Steps>
+
+## Required Fields
+
+All fields marked below are required to successfully create a course.
+
+### Course Title
+
+- **Field name**: `title`
+- **Type**: Text input
+- **Max length**: 70 characters
+- **Validation**:
+  - Required field
+  - Minimum 3 characters
+
+```jsx
+<input
+  type="text"
+  name="title"
+  maxLength={70}
+  required
+/>
+```
+
+### Description
+
+- **Field name**: `description`
+- **Type**: Textarea
+- **Max length**: 90 characters
+- **Validation**:
+  - Required field
+  - Minimum 20 characters
+  - Maximum 90 characters
+
+```jsx
+<textarea
+  name="description"
+  maxLength={90}
+  required
+/>
+```
+
+<Warning>
+The description must be between 20 and 90 characters. Keep it concise but informative.
+</Warning>
+
+### Category
+
+- **Field name**: `category`
+- **Type**: Select dropdown
+- **Options**: Dynamically loaded from available categories
+- **Validation**: Required field
+
+Categories are sorted alphabetically and loaded from `localStorage.getItem("categoriesData")`.
+
+### Sections
+
+- **Field name**: `sections`
+- **Type**: Number input
+- **Min value**: 1
+- **Validation**:
+  - Required field
+  - Must be at least 1
+
+<Info>
+Sections help organize your course content. Each section can contain multiple lectures. Plan your course structure before setting the number of sections.
+</Info>
+
+### Course Image
+
+- **Field name**: `image`
+- **Type**: File input
+- **Storage**: Firebase Storage at `courses/{course-title}/{filename}`
+- **Format**: Image files (JPG, PNG, etc.)
+
+### Price
+
+- **Field name**: `price`
+- **Type**: Number input
+- **Default**: $1.00
+- **Min**: $1.00
+- **Max**: $9,999.99
+- **Step**: 0.01 (supports cents)
+
+```jsx
+<input
+  type="number"
+  step="0.01"
+  min="1"
+  max="9999.99"
+  name="price"
+/>
+```
+
+## Course Creation Logic
+
+When you submit the course form, the following process occurs:
+
+<Steps>
+  <Step title="Image Upload">
+    The course image is uploaded to Firebase Storage and a download URL is generated.
+    
+    Reference: `~/workspace/source/src/views/Form/Form.jsx:44-54`
+  </Step>
+  
+  <Step title="Validation">
+    Form data is validated against the rules defined in `utils/validation.js`.
+    
+    Reference: `~/workspace/source/src/utils/validation.js:1-37`
+  </Step>
+  
+  <Step title="API Request">
+    A POST request is sent to `/courses/create` with the course data:
+    
+    ```javascript
+    await axios.post("/courses/create", {
+      title,
+      description,
+      instructor_id,
+      category,
+      image,
+      sections,
+      price
+    });
+    ```
+    
+    Reference: `~/workspace/source/src/views/Form/Form.jsx:80-83`
+  </Step>
+  
+  <Step title="Cache Update">
+    Course data is refreshed in localStorage via `getAllCourses()`.
+  </Step>
+  
+  <Step title="Redirect">
+    Upon success, you're redirected to `/courses` to view all courses including your new one.
+  </Step>
+</Steps>
+
+## Common Validation Errors
+
+<AccordionGroup>
+  <Accordion title="Title is too short">
+    **Error**: "Debe tener al menos 3 caracteres."
+    
+    **Solution**: Ensure your course title is at least 3 characters long. A descriptive title helps students find your course.
+  </Accordion>
+  
+  <Accordion title="Description length issues">
+    **Error**: "La descripción debe tener al menos 20 caracteres." or "La descripción debe tener menos de 80 caracteres."
+    
+    **Solution**: Your description must be between 20 and 90 characters. Provide enough detail to interest students while staying within the limit.
+  </Accordion>
+  
+  <Accordion title="No category selected">
+    **Error**: "Debe ingresar una categoría relacionada con el curso."
+    
+    **Solution**: Select a category from the dropdown that best matches your course content.
+  </Accordion>
+  
+  <Accordion title="Sections not set">
+    **Error**: "el curso debe por lo menos tener una sección" or "el campo de sección no puede estar vacio"
+    
+    **Solution**: Enter at least 1 section. Sections help organize your course lectures into logical groups.
+  </Accordion>
+  
+  <Accordion title="Invalid price">
+    **Error**: "Debe ser superior a US$ 0,50."
+    
+    **Solution**: Set a price of at least $1.00. Consider the value you're providing and competitive pricing in your category.
+  </Accordion>
+</AccordionGroup>
+
+## Success Confirmation
+
+When your course is successfully created, you'll see a confirmation dialog:
+
+- **Title**: "Tu curso se creo correctamente!"
+- **Message**: "Dirígete a la sección de cursos, ahí podrás encontrarlo."
+- **Action**: Redirects to `/courses`
+
+Reference: `~/workspace/source/src/views/Form/Form.jsx:88-96`
+
+## Next Steps
+
+After creating your course:
+
+1. **Add Lectures**: Navigate to your instructor dashboard and click "Crea clases" to add video lectures to your course
+2. **Edit Course Details**: Use the "Editar curso" button to modify course information
+3. **Set Discounts**: Optionally add promotional discounts to attract more students
+
+<Card title="Related Documentation" icon="book" href="/instructors/managing-content">
+  Learn how to add and organize lectures in your course
+</Card>
+
+## Tips for Successful Courses
+
+<Tip>
+**Choose a clear, descriptive title**: Your course title is the first thing students see. Make it specific and keyword-rich.
+</Tip>
+
+<Tip>
+**Plan your sections**: Think about how to logically group your content. Common structures include:
+- Beginner → Intermediate → Advanced
+- Modules by topic
+- Week-by-week organization
+</Tip>
+
+<Tip>
+**Price competitively**: Research similar courses in your category to set a fair price that reflects your course's value.
+</Tip>

@@ -1,0 +1,426 @@
+---
+title: Student Management
+description: Monitor student engagement, view ratings, and manage course pricing on EducaStream
+---
+
+As an instructor, EducaStream provides tools to monitor student feedback, manage pricing, and track course performance. This guide covers the student-facing aspects of course management.
+
+## Viewing Student Ratings
+
+Students can rate your courses and leave comments. You can view all ratings and calculate average scores directly from your instructor dashboard.
+
+### Accessing Course Ratings
+
+From your instructor dashboard:
+
+1. Find your course in the "Tus cursos" section
+2. Click the **"Ver calificaciones"** button with the message icon
+3. A modal displays all ratings and comments
+
+Reference: `~/workspace/source/src/views/Instructor/Instructor.jsx:299-312`
+
+### Ratings Display
+
+The ratings modal shows:
+
+- **Average Rating**: Calculated from all student ratings
+- **Total Comments**: Count of how many students have rated
+- **Detailed Table**: Individual ratings with comments
+
+<Info>
+Ratings are displayed in a table format with three columns: number, rating (stars), and comment.
+</Info>
+
+#### Ratings Calculation
+
+The system calculates the average rating from all student submissions:
+
+```javascript
+const handleRating = (course) => {
+  if (course && course.ratings) {
+    let totalRating = 0;
+    let totalComments = 0;
+    
+    course.ratings.forEach(rating => {
+      totalRating += rating.rating;
+      totalComments++;
+    });
+    
+    const averageRating = totalRating / totalComments;
+    
+    // Display: averageRating.toFixed(2)
+  }
+};
+```
+
+Reference: `~/workspace/source/src/views/Instructor/Instructor.jsx:208-263`
+
+### Ratings Table Structure
+
+Each rating entry includes:
+
+| # | Calificación | Comentario |
+|---|--------------|------------|
+| 1 | 5 estrellas  | Student comment text |
+| 2 | 4 estrellas  | Student comment text |
+
+Reference: `~/workspace/source/src/views/Instructor/Instructor.jsx:214-244`
+
+<Tip>
+Monitor your ratings regularly to identify areas for course improvement. Student feedback is invaluable for enhancing course quality.
+</Tip>
+
+## Managing Course Pricing
+
+EducaStream allows you to create promotional discounts to attract more students. You can add, modify, or remove discounts directly from your dashboard.
+
+### Adding a Discount
+
+To add a promotional discount to a course:
+
+<Steps>
+  <Step title="Click 'Agregar descuento'">
+    On courses without an active discount, click the **"Agregar descuento"** button.
+  </Step>
+  
+  <Step title="Enter Discount Percentage">
+    A modal prompts you to enter a discount percentage:
+    - **Min**: 1%
+    - **Max**: 99%
+    - **Type**: Integer
+  </Step>
+  
+  <Step title="Confirm">
+    Click confirm to apply the discount. Your course is now marked as "on sale" (`onSale: true`).
+  </Step>
+</Steps>
+
+Reference: `~/workspace/source/src/views/Instructor/Instructor.jsx:169-205`
+
+```javascript
+const newDataCourse = {
+  id: courseId,
+  onSale: true,
+  percentageDiscount: parseInt(discountValue)
+};
+
+await updateCourse(newDataCourse);
+```
+
+Reference: `~/workspace/source/src/views/Instructor/Instructor.jsx:186-194`
+
+<Warning>
+Discount percentages must be between 1% and 99%. Setting a discount to 0 removes the course from the sale list.
+</Warning>
+
+### Modifying an Existing Discount
+
+For courses with active discounts:
+
+<Steps>
+  <Step title="Click 'Modificar descuento'">
+    Courses on sale show a **"Modificar descuento"** button instead of "Agregar descuento".
+  </Step>
+  
+  <Step title="Enter New Percentage">
+    The modal allows you to enter a new discount percentage (0-99):
+    - **0%**: Removes the course from sales (`onSale: false`)
+    - **1-99%**: Updates the discount percentage
+  </Step>
+  
+  <Step title="Confirm Changes">
+    The system updates the course pricing and sale status accordingly.
+  </Step>
+</Steps>
+
+Reference: `~/workspace/source/src/views/Instructor/Instructor.jsx:104-167`
+
+### Discount Logic
+
+The discount system works as follows:
+
+```javascript
+if (discountValue === "0") {
+  // Remove from sale
+  newDataCourse = {
+    id: courseId,
+    onSale: false,
+    percentageDiscount: 0
+  };
+} else {
+  // Apply discount
+  newDataCourse = {
+    id: courseId,
+    onSale: true,
+    percentageDiscount: parseInt(discountValue)
+  };
+}
+```
+
+Reference: `~/workspace/source/src/views/Instructor/Instructor.jsx:125-139`
+
+### Discount Confirmation Messages
+
+<AccordionGroup>
+  <Accordion title="Discount Added">
+    **Title**: "Tu curso ahora esta en oferta!"
+    
+    **Icon**: Success ✓
+    
+    **Trigger**: When a discount ≥ 1% is added to a course
+    
+    Reference: `~/workspace/source/src/views/Instructor/Instructor.jsx:196-202`
+  </Accordion>
+  
+  <Accordion title="Discount Modified">
+    **Title**: "Se modifico el descuento de tu curso con exito!"
+    
+    **Icon**: Success ✓
+    
+    **Trigger**: When an existing discount is updated to a value ≥ 1%
+    
+    Reference: `~/workspace/source/src/views/Instructor/Instructor.jsx:146-152`
+  </Accordion>
+  
+  <Accordion title="Discount Removed">
+    **Title**: "Se retiro tu curso de la lista de ofertas!"
+    
+    **Icon**: Success ✓
+    
+    **Trigger**: When discount is set to 0%
+    
+    Reference: `~/workspace/source/src/views/Instructor/Instructor.jsx:159-165`
+  </Accordion>
+</AccordionGroup>
+
+## Discount Input Validation
+
+When entering discounts, the input field enforces:
+
+```javascript
+inputAttributes: {
+  min: "0",  // or "1" for new discounts
+  max: "99"
+}
+```
+
+Reference: `~/workspace/source/src/views/Instructor/Instructor.jsx:114-118` and `~/workspace/source/src/views/Instructor/Instructor.jsx:177-180`
+
+<Note>
+For new discounts, the minimum is 1%. For modifying existing discounts, you can enter 0% to remove the sale.
+</Note>
+
+## Course Visibility and Status
+
+### Active Courses
+
+Active courses appear in the "Tus cursos" section and are visible to students. These courses have `enabled: true`.
+
+From your dashboard, you can:
+
+- **Create lectures**: Add new video content
+- **Edit course**: Modify course details and lectures
+- **Add/modify discount**: Manage pricing promotions
+- **Deactivate course**: Temporarily remove from catalog
+- **View ratings**: See student feedback
+
+Reference: `~/workspace/source/src/views/Instructor/Instructor.jsx:315-344`
+
+### Deactivated Courses
+
+Deactivated courses appear in "Tus cursos desactivados" and are not visible to students. These courses have `enabled: false`.
+
+Available actions:
+
+- **Edit course**: Modify course details
+- **Restore course**: Reactivate the course (unless banned)
+
+Reference: `~/workspace/source/src/views/Instructor/Instructor.jsx:370-382`
+
+### Course Filtering Logic
+
+The instructor dashboard filters courses based on your instructor ID and enabled status:
+
+```javascript
+// Active courses
+const coursesCreated = dataCourses.filter(
+  (item) => item.instructor_id === userData?.id && item.enabled === true
+);
+
+// Deactivated courses
+const enabledCourses = dataCourses.filter(
+  (item) => item.instructor_id === userData?.id && item.enabled === false
+);
+```
+
+Reference: `~/workspace/source/src/views/Instructor/Instructor.jsx:26-36`
+
+<Info>
+Courses are loaded from `localStorage.getItem("coursesData")` which is updated whenever course data changes.
+</Info>
+
+## Banned Courses
+
+Courses that violate platform policies may be banned by administrators. Banned courses:
+
+- Have `banned: true` and `enabled: false`
+- Cannot be restored by instructors
+- Are shown in the deactivated courses section without a restore button
+
+```javascript
+{(course.banned && course.enabled === false) || null ? (
+  "" // No restore button shown
+) : (
+  <Button
+    text={"Restaurar curso"}
+    onClick={() => enableRestoreCourse(course.id, true)}
+  />
+)}
+```
+
+Reference: `~/workspace/source/src/views/Instructor/Instructor.jsx:373-379`
+
+<Warning>
+If your course is banned, contact EducaStream support to understand the reason and discuss resolution options.
+</Warning>
+
+## Instructor Dashboard Overview
+
+Your instructor dashboard (`/instructor/{your-id}`) provides a centralized hub for managing all your courses.
+
+### Dashboard Sections
+
+1. **Welcome Header**: Personalized greeting with your first name
+2. **Create Course Button**: Quick access to course creation form
+3. **Active Courses**: List of all your published courses with management options
+4. **Deactivated Courses**: List of temporarily disabled courses
+
+Reference: `~/workspace/source/src/views/Instructor/Instructor.jsx:264-388`
+
+### Empty States
+
+<AccordionGroup>
+  <Accordion title="No Active Courses">
+    **Message**: "No tienes cursos creados"
+    
+    **Action**: Click "Crea tu curso" to create your first course
+    
+    Reference: `~/workspace/source/src/views/Instructor/Instructor.jsx:282-285`
+  </Accordion>
+  
+  <Accordion title="No Deactivated Courses">
+    **Message**: "No hay cursos desactivados"
+    
+    **Meaning**: All your courses are currently active
+    
+    Reference: `~/workspace/source/src/views/Instructor/Instructor.jsx:355-358`
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices for Student Engagement
+
+<Tip>
+**Respond to feedback**: While the platform doesn't show a direct response feature, use student ratings to improve your course content. Address common concerns in updated lectures.
+</Tip>
+
+<Tip>
+**Strategic discounting**: Use discounts during promotional periods or when launching new content to attract more students. Avoid permanent heavy discounts that may devalue your course.
+</Tip>
+
+<Tip>
+**Monitor average ratings**: Aim for high average ratings (4+ stars). If your rating drops, review recent comments to identify improvement areas.
+</Tip>
+
+<Tip>
+**Keep courses updated**: Regularly review and update course content. Students appreciate current, relevant material.
+</Tip>
+
+## Pricing Strategy Tips
+
+### When to Offer Discounts
+
+- **Course launches**: Attract initial students with introductory pricing
+- **Holidays and special events**: Take advantage of increased shopping activity
+- **Low enrollment periods**: Boost interest during slower seasons
+- **Course updates**: Reward existing students and attract new ones when adding significant content
+
+### Optimal Discount Ranges
+
+- **10-20%**: Small discount for minor promotions
+- **30-50%**: Moderate discount for standard sales
+- **60-80%**: Deep discount for major promotional events
+- **90%+**: Rarely recommended; may devalue course perception
+
+<Warning>
+Frequent or extreme discounts can train students to wait for sales rather than purchasing at full price. Use strategic, time-limited promotions.
+</Warning>
+
+## Update Course Workflow
+
+The update course function is used for multiple operations:
+
+```javascript
+import updateCourse from "../../utils/updateCourse";
+
+// Enable/disable course
+await updateCourse({
+  id: courseId,
+  enabled: true/false
+});
+
+// Update discount
+await updateCourse({
+  id: courseId,
+  onSale: true/false,
+  percentageDiscount: value
+});
+
+// Update course details
+await updateCourse({
+  id: courseId,
+  title: "New Title",
+  description: "New Description",
+  // ... other fields
+});
+```
+
+Reference: `~/workspace/source/src/utils/updateCourse.js:3-23`
+
+All update operations:
+1. Send a PUT request to `/courses/edit`
+2. Refresh course data via `getAllCourses()`
+3. Update local storage cache
+4. Trigger UI updates
+
+## Related Documentation
+
+<CardGroup cols={2}>
+  <Card title="Creating Courses" icon="plus" href="/instructors/creating-courses">
+    Learn how to create your first course
+  </Card>
+  <Card title="Managing Content" icon="video" href="/instructors/managing-content">
+    Add and organize lectures in your courses
+  </Card>
+</CardGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Ratings not appearing">
+    **Cause**: No students have rated your course yet, or ratings haven't loaded.
+    
+    **Solution**: Ensure students have completed your course. Ratings typically appear after students finish watching lectures.
+  </Accordion>
+  
+  <Accordion title="Discount not applying">
+    **Cause**: Cache not updated or form validation error.
+    
+    **Solution**: Refresh the page and verify the discount percentage is between allowed values (1-99 for add, 0-99 for modify).
+  </Accordion>
+  
+  <Accordion title="Can't restore banned course">
+    **Cause**: Course has `banned: true` status.
+    
+    **Solution**: Contact EducaStream support to resolve the ban. Instructors cannot self-restore banned content.
+  </Accordion>
+</AccordionGroup>

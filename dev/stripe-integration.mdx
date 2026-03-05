@@ -1,0 +1,497 @@
+---
+title: 'Stripe Integration'
+description: 'Configure Stripe payment processing for course purchases'
+---
+
+## Overview
+
+EducaStream uses **Stripe** to process course payments securely. The integration handles:
+
+- Shopping cart checkout
+- Payment session creation
+- Redirect to Stripe-hosted checkout
+- Payment confirmation and fulfillment
+
+<Info>
+  Stripe handles all sensitive payment data, so you never need to process credit card information directly.
+</Info>
+
+## Stripe Dependencies
+
+EducaStream uses the following Stripe packages from `package.json:14-15,27`:
+
+```json
+"dependencies": {
+  "@stripe/react-stripe-js": "^2.3.1",
+  "@stripe/stripe-js": "^2.1.11",
+  "stripe": "^14.3.0"
+}
+```
+
+<CardGroup cols={2}>
+  <Card title="@stripe/stripe-js" icon="js">
+    Official Stripe.js library for client-side
+  </Card>
+  <Card title="@stripe/react-stripe-js" icon="react">
+    React components for Stripe Elements
+  </Card>
+  <Card title="stripe" icon="server">
+    Server-side Stripe SDK (backend)
+  </Card>
+</CardGroup>
+
+## Setup Stripe Account
+
+<Steps>
+  <Step title="Create Stripe Account">
+    1. Go to [Stripe Dashboard](https://dashboard.stripe.com/register)
+    2. Sign up for a new account
+    3. Complete account verification
+  </Step>
+
+  <Step title="Get API Keys">
+    1. Navigate to **Developers** → **API Keys**
+    2. Copy your **Publishable key** (starts with `pk_`)
+    3. Copy your **Secret key** (starts with `sk_`)
+    
+    <Warning>
+      Keep your Secret key secure! Never commit it to version control or expose it in client-side code.
+    </Warning>
+  </Step>
+
+  <Step title="Configure Test Mode">
+    For development, use Stripe's test mode:
+    - Toggle **Test mode** in the top right of the dashboard
+    - Use test API keys (pk_test_... and sk_test_...)
+    - Use [test card numbers](https://stripe.com/docs/testing) for testing
+  </Step>
+</Steps>
+
+## Environment Variables
+
+Add your Stripe keys to environment variables:
+
+<Tabs>
+  <Tab title="Frontend (.env)">
+    ```bash
+    # Stripe Publishable Key (safe for client-side)
+    VITE_STRIPE_PUBLIC_KEY=pk_test_51XXXXXXXXXXXXXXXXXXXXX
+    ```
+  </Tab>
+
+  <Tab title="Backend">
+    ```bash
+    # Stripe Secret Key (server-side only!)
+    STRIPE_SECRET_KEY=sk_test_51XXXXXXXXXXXXXXXXXXXXX
+    ```
+    
+    <Warning>
+      The secret key should ONLY be used on your backend, never in frontend code!
+    </Warning>
+  </Tab>
+</Tabs>
+
+## Payment Flow
+
+The payment implementation from `src/Components/PayButton/Paybutton.jsx:1-35`:
+
+```jsx Paybutton.jsx
+import axios from "axios";
+import style from "./Paybutton.module.css";
+
+const PayButton = ({ text, disabled }) => {
+  const user = JSON.parse(localStorage.getItem("userOnSession"));
+  const cartItems = JSON.parse(localStorage.getItem("cart"));
+  
+  const handleCheckout = () => {
+    axios
+      .post(`/payment/create-checkout-session`, {
+        cartItems,
+        userId: user.id,
+      })
+      .then((response) => {
+        if (response.data.url) {
+          localStorage.setItem("payment", JSON.stringify(response.data));
+          window.location.href = response.data.url;
+        }
+      })
+      .catch((err) => console.log(err.message));
+  };
+
+  return (
+    <>
+      <button
+        className={style.finalizePurchase}
+        onClick={() => handleCheckout()}
+        disabled={disabled}
+      >
+        {text}
+      </button>
+    </>
+  );
+};
+
+export default PayButton;
+```
+
+### Payment Process
+
+<Steps>
+  <Step title="User Initiates Checkout">
+    When user clicks the PayButton:
+    - Cart items retrieved from localStorage
+    - User ID retrieved from session
+    - Request sent to backend
+  </Step>
+
+  <Step title="Backend Creates Checkout Session">
+    Backend endpoint `/payment/create-checkout-session`:
+    - Validates cart items and user
+    - Creates Stripe Checkout Session
+    - Returns session URL
+  </Step>
+
+  <Step title="Redirect to Stripe">
+    User is redirected to Stripe-hosted checkout:
+    - Secure payment form
+    - Support for cards, Apple Pay, Google Pay
+    - PCI-compliant payment processing
+  </Step>
+
+  <Step title="Payment Completion">
+    After successful payment:
+    - User redirected to `/payment/checkout/sucess`
+    - Payment data stored in localStorage
+    - Order fulfillment triggered
+  </Step>
+</Steps>
+
+## Backend Implementation
+
+Your backend needs to implement the checkout session creation:
+
+```javascript
+import Stripe from 'stripe';
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+app.post('/payment/create-checkout-session', async (req, res) => {
+  const { cartItems, userId } = req.body;
+
+  try {
+    // Create line items from cart
+    const lineItems = cartItems.map(item => ({
+      price_data: {
+        currency: 'usd',
+        product_data: {
+          name: item.name,
+          description: item.description,
+          images: [item.image],
+        },
+        unit_amount: item.price * 100, // Convert to cents
+      },
+      quantity: 1,
+    }));
+
+    // Create Stripe Checkout Session
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: lineItems,
+      mode: 'payment',
+      success_url: `${process.env.CLIENT_URL}/payment/checkout/sucess?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.CLIENT_URL}/cart/${userId}`,
+      metadata: {
+        userId: userId,
+      },
+    });
+
+    res.json({ url: session.url });
+  } catch (error) {
+    console.error('Stripe error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+```
+
+## Success Page Implementation
+
+The success route is defined in `App.jsx:120-122`:
+
+```jsx
+<Route
+  path="/payment/checkout/sucess"
+  element={<CheckOut updateContextUser={updateContextUser} />}
+/>
+```
+
+Implement the CheckOut component to handle successful payments:
+
+```jsx CheckOut.jsx
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+export const CheckOut = ({ updateContextUser }) => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const processPayment = async () => {
+      // Get session ID from URL
+      const params = new URLSearchParams(window.location.search);
+      const sessionId = params.get('session_id');
+
+      if (sessionId) {
+        // Verify payment with backend
+        // Update user's purchased courses
+        // Clear cart
+        localStorage.removeItem('cart');
+        
+        // Redirect to student dashboard
+        const user = JSON.parse(localStorage.getItem('userOnSession'));
+        navigate(`/student/${user.id}`);
+      }
+    };
+
+    processPayment();
+  }, []);
+
+  return (
+    <div>
+      <h1>Payment Successful!</h1>
+      <p>Thank you for your purchase. Redirecting...</p>
+    </div>
+  );
+};
+```
+
+## Webhooks for Payment Verification
+
+For production, implement Stripe webhooks to verify payments:
+
+```javascript
+app.post('/webhook', express.raw({type: 'application/json'}), (req, res) => {
+  const sig = req.headers['stripe-signature'];
+  let event;
+
+  try {
+    event = stripe.webhooks.constructEvent(
+      req.body,
+      sig,
+      process.env.STRIPE_WEBHOOK_SECRET
+    );
+  } catch (err) {
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  // Handle the event
+  switch (event.type) {
+    case 'checkout.session.completed':
+      const session = event.data.object;
+      // Fulfill the purchase
+      fulfillOrder(session);
+      break;
+    case 'payment_intent.payment_failed':
+      const paymentIntent = event.data.object;
+      // Handle failed payment
+      console.log('Payment failed:', paymentIntent.id);
+      break;
+    default:
+      console.log(`Unhandled event type ${event.type}`);
+  }
+
+  res.json({received: true});
+});
+```
+
+## Testing Payments
+
+### Test Card Numbers
+
+Use these test cards in Stripe test mode:
+
+<CardGroup cols={2}>
+  <Card title="Successful Payment" icon="check">
+    **4242 4242 4242 4242**
+    
+    Any future expiry, any CVC
+  </Card>
+  
+  <Card title="Payment Declined" icon="xmark">
+    **4000 0000 0000 0002**
+    
+    Card declined
+  </Card>
+  
+  <Card title="Insufficient Funds" icon="wallet">
+    **4000 0000 0000 9995**
+    
+    Insufficient funds
+  </Card>
+  
+  <Card title="3D Secure" icon="shield">
+    **4000 0025 0000 3155**
+    
+    Requires authentication
+  </Card>
+</CardGroup>
+
+### Testing Workflow
+
+<Steps>
+  <Step title="Add Items to Cart">
+    Browse courses and add them to cart using the CartContext
+  </Step>
+
+  <Step title="Proceed to Checkout">
+    Click the PayButton component to initiate checkout
+  </Step>
+
+  <Step title="Complete Payment">
+    Use a test card number on Stripe's checkout page
+  </Step>
+
+  <Step title="Verify Success">
+    Confirm redirect to success page and cart is cleared
+  </Step>
+</Steps>
+
+## Cart Integration
+
+The cart is managed by `CartContext.jsx:1-117` with localStorage persistence:
+
+```jsx
+const initialState = {
+  cart: JSON.parse(localStorage.getItem("cart")) || [],
+};
+
+const cartReducer = (state = initialState, action) => {
+  switch (action.type) {
+    case ADD_TO_CART:
+      // Prevent duplicate courses
+      const isCourseInCart = state.cart.find(
+        (product) => product.id === action.payload.id
+      );
+      
+      if (isCourseInCart) {
+        // Show warning toast
+        return state;
+      }
+      
+      return {
+        ...state,
+        cart: [...state.cart, action.payload],
+      };
+      
+    case REMOVE_FROM_CART:
+      const updatedCart = state.cart.filter(
+        (product) => product.id !== action.payload
+      );
+      return { ...state, cart: updatedCart };
+      
+    case CLEAR:
+      return { ...state, cart: action.payload };
+      
+    default:
+      return state;
+  }
+};
+```
+
+## Security Best Practices
+
+<Check>Never expose Stripe Secret Key in frontend code</Check>
+<Check>Always validate cart items on the backend</Check>
+<Check>Verify payment amounts server-side</Check>
+<Check>Use webhooks for payment confirmation</Check>
+<Check>Implement idempotency keys for duplicate requests</Check>
+<Check>Enable Stripe Radar for fraud detection</Check>
+<Check>Use HTTPS in production</Check>
+
+## Common Issues
+
+<AccordionGroup>
+  <Accordion title="CORS errors when calling Stripe">
+    Ensure your backend has proper CORS configuration:
+    
+    ```javascript
+    app.use(cors({
+      origin: process.env.CLIENT_URL,
+      credentials: true
+    }));
+    ```
+  </Accordion>
+
+  <Accordion title="Invalid API Key errors">
+    - Verify you're using the correct key (test vs live)
+    - Check the key is properly set in environment variables
+    - Ensure no extra spaces in the key
+  </Accordion>
+
+  <Accordion title="Payment succeeds but order not fulfilled">
+    - Implement webhook handlers
+    - Check webhook signing secret is correct
+    - Verify webhook endpoint is publicly accessible
+  </Accordion>
+
+  <Accordion title="Redirect not working after payment">
+    - Check success_url and cancel_url are correct
+    - Verify URLs are properly encoded
+    - Ensure frontend routes exist
+  </Accordion>
+</AccordionGroup>
+
+## Production Checklist
+
+<Steps>
+  <Step title="Switch to Live Mode">
+    - Use live API keys (pk_live_... and sk_live_...)
+    - Update environment variables
+    - Complete Stripe account activation
+  </Step>
+
+  <Step title="Configure Webhooks">
+    - Set up webhook endpoint
+    - Add webhook secret to environment
+    - Test webhook delivery
+  </Step>
+
+  <Step title="Enable Security Features">
+    - Turn on Stripe Radar
+    - Configure 3D Secure
+    - Set up fraud detection rules
+  </Step>
+
+  <Step title="Test End-to-End">
+    - Complete test purchase in production
+    - Verify order fulfillment
+    - Check email notifications
+  </Step>
+</Steps>
+
+## Monitoring Payments
+
+In Stripe Dashboard:
+
+- **Payments** - View all transactions
+- **Customers** - Manage customer data
+- **Products** - Configure course products
+- **Reports** - Analyze revenue and trends
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Architecture" icon="diagram-project" href="/dev/architecture">
+    Understand the full application architecture
+  </Card>
+  <Card title="Firebase Config" icon="fire" href="/dev/firebase-config">
+    Configure Firebase Storage
+  </Card>
+</CardGroup>
+
+## Additional Resources
+
+<Card title="Stripe Checkout Docs" icon="stripe" href="https://stripe.com/docs/payments/checkout">
+  Official Stripe Checkout documentation
+</Card>
+
+<Card title="Testing Stripe" icon="vial" href="https://stripe.com/docs/testing">
+  Stripe testing guide with test card numbers
+</Card>

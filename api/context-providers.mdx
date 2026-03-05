@@ -1,0 +1,662 @@
+---
+title: 'Context Providers'
+description: 'API reference for EducaStream React Context providers'
+---
+
+## Overview
+
+EducaStream uses React Context API to manage global state across the application. The platform implements two main context providers: **CartContext** for shopping cart functionality and **userContext** for authentication state.
+
+---
+
+## CartContext
+
+The CartContext manages the shopping cart state, including adding courses, removing courses, and clearing the cart. It includes built-in validation to prevent duplicate purchases and user-friendly toast notifications.
+
+### Provider Setup
+
+**Source:** `src/context/CartContext.jsx:94`
+
+```jsx
+import { CartProvider } from './context/CartContext';
+
+function App() {
+  return (
+    <CartProvider>
+      {/* Your app components */}
+    </CartProvider>
+  );
+}
+```
+
+---
+
+### CartProvider
+
+The CartProvider wraps your application and provides cart state and dispatch functions to all child components.
+
+<ParamField path="children" type="ReactNode" required>
+  Child components that will have access to cart context
+</ParamField>
+
+**Implementation:** `src/context/CartContext.jsx:94-106`
+
+```jsx
+export const CartProvider = ({ children }) => {
+  const [state, dispatch] = useReducer(cartReducer, initialState);
+
+  useEffect(() => {
+    localStorage.setItem("cart", JSON.stringify(state.cart));
+  }, [state.cart]);
+
+  return (
+    <CartContext.Provider value={{ state, dispatch }}>
+      {children}
+    </CartContext.Provider>
+  );
+};
+```
+
+---
+
+### useCart Hook
+
+Custom hook to access cart context. Must be used within a CartProvider.
+
+<ResponseField name="context" type="object">
+  Cart context object
+  
+  <ResponseField name="state" type="object">
+    Current cart state
+    
+    <ResponseField name="cart" type="array">
+      Array of course objects in the cart
+    </ResponseField>
+  </ResponseField>
+  
+  <ResponseField name="dispatch" type="function">
+    Dispatch function to trigger cart actions
+  </ResponseField>
+</ResponseField>
+
+**Source:** `src/context/CartContext.jsx:108-116`
+
+```jsx
+import { useCart } from './context/CartContext';
+
+function CartComponent() {
+  const { state, dispatch } = useCart();
+  
+  return (
+    <div>
+      <p>Items in cart: {state.cart.length}</p>
+    </div>
+  );
+}
+```
+
+**Error Handling:**
+
+```jsx
+if (!context) {
+  throw new Error("useCart debe utilizarse dentro de un CartProvider");
+}
+```
+
+---
+
+## Cart Actions
+
+### Action Types
+
+**Source:** `src/context/CartTypes.js`
+
+<Tabs>
+  <Tab title="ADD_TO_CART">
+    ### ADD_TO_CART
+    
+    Adds a course to the shopping cart with validation checks.
+    
+    <ParamField path="type" type="string" required>
+      Action type: `"ADD_TO_CART"`
+    </ParamField>
+    
+    <ParamField path="payload" type="object" required>
+      Course object to add to cart
+      
+      <ParamField path="id" type="string" required>
+        Unique course identifier
+      </ParamField>
+      
+      <ParamField path="title" type="string">
+        Course title
+      </ParamField>
+      
+      <ParamField path="price" type="number">
+        Course price
+      </ParamField>
+      
+      <ParamField path="image" type="string">
+        Course thumbnail URL
+      </ParamField>
+    </ParamField>
+    
+    **Implementation:** `src/context/CartContext.jsx:26-71`
+    
+    **Validations:**
+    1. Checks if course already exists in cart
+    2. Checks if user has already purchased the course
+    3. Shows appropriate toast notification
+    
+    ```jsx
+    import { useCart } from './context/CartContext';
+    import { ADD_TO_CART } from './context/CartTypes';
+    
+    function CourseCard({ course }) {
+      const { dispatch } = useCart();
+      
+      const addToCart = () => {
+        dispatch({
+          type: ADD_TO_CART,
+          payload: course
+        });
+      };
+      
+      return (
+        <button onClick={addToCart}>
+          Add to Cart
+        </button>
+      );
+    }
+    ```
+    
+    **Toast Notifications:**
+    
+    - **Already in cart:** Warning toast with message "¡El curso ya existe en carrito!"
+    - **Already purchased:** Warning toast with message "¡Ya has comprado este curso!"
+    - **Successfully added:** Success toast with message "¡Curso agregado al carrito con éxito!"
+    
+    **Logic Flow:**
+    
+    ```javascript
+    case ADD_TO_CART:
+      // Check if course is already in cart
+      const isCourseInCart = state.cart.find(
+        (product) => product.id === action.payload.id
+      );
+      
+      if (isCourseInCart) {
+        // Show warning and return unchanged state
+        return state;
+      }
+      
+      // Check if user already purchased this course
+      const session = JSON.parse(localStorage.getItem("userOnSession"));
+      const userCourse = (session?.Payments || []).find((payment) =>
+        (payment.Courses || []).find(
+          (course) => course.id === action.payload.id
+        )
+      );
+      
+      if (userCourse) {
+        // Show warning and return unchanged state
+        return state;
+      }
+      
+      // Add to cart
+      return {
+        ...state,
+        cart: [...state.cart, action.payload]
+      };
+    ```
+  </Tab>
+  
+  <Tab title="REMOVE_FROM_CART">
+    ### REMOVE_FROM_CART
+    
+    Removes a course from the shopping cart by ID.
+    
+    <ParamField path="type" type="string" required>
+      Action type: `"REMOVE_FROM_CART"`
+    </ParamField>
+    
+    <ParamField path="payload" type="string" required>
+      Course ID to remove from cart
+    </ParamField>
+    
+    **Implementation:** `src/context/CartContext.jsx:73-81`
+    
+    ```jsx
+    import { useCart } from './context/CartContext';
+    import { REMOVE_FROM_CART } from './context/CartTypes';
+    
+    function CartItem({ courseId }) {
+      const { dispatch } = useCart();
+      
+      const removeFromCart = () => {
+        dispatch({
+          type: REMOVE_FROM_CART,
+          payload: courseId
+        });
+      };
+      
+      return (
+        <button onClick={removeFromCart}>
+          Remove
+        </button>
+      );
+    }
+    ```
+    
+    **Logic:**
+    
+    ```javascript
+    case REMOVE_FROM_CART:
+      const updatedCart = state.cart.filter(
+        (product) => product.id !== action.payload
+      );
+      
+      return {
+        ...state,
+        cart: updatedCart
+      };
+    ```
+  </Tab>
+  
+  <Tab title="CLEAR">
+    ### CLEAR
+    
+    Clears the entire shopping cart or replaces it with a new array.
+    
+    <ParamField path="type" type="string" required>
+      Action type: `"CLEAR"`
+    </ParamField>
+    
+    <ParamField path="payload" type="array" required>
+      New cart array (typically empty array to clear cart)
+    </ParamField>
+    
+    **Implementation:** `src/context/CartContext.jsx:83-87`
+    
+    ```jsx
+    import { useCart } from './context/CartContext';
+    import { CLEAR } from './context/CartTypes';
+    
+    function CheckoutSuccess() {
+      const { dispatch } = useCart();
+      
+      const clearCart = () => {
+        dispatch({
+          type: CLEAR,
+          payload: []
+        });
+      };
+      
+      useEffect(() => {
+        // Clear cart after successful payment
+        clearCart();
+      }, []);
+      
+      return <div>Payment successful!</div>;
+    }
+    ```
+    
+    **Logic:**
+    
+    ```javascript
+    case CLEAR:
+      return {
+        ...state,
+        cart: action.payload
+      };
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+### Cart State Structure
+
+**Initial State:** `src/context/CartContext.jsx:8-10`
+
+```javascript
+const initialState = {
+  cart: JSON.parse(localStorage.getItem("cart")) || []
+};
+```
+
+The cart state is persisted to localStorage and automatically restored on page reload.
+
+---
+
+### Toast Configuration
+
+The CartContext uses SweetAlert2 for user notifications with the following configuration:
+
+**Source:** `src/context/CartContext.jsx:12-22`
+
+```javascript
+const Toast = Swal.mixin({
+  toast: true,
+  position: "top-end",
+  showConfirmButton: false,
+  timer: 2000,
+  timerProgressBar: true,
+  didOpen: (toast) => {
+    toast.addEventListener("mouseenter", Swal.stopTimer);
+    toast.addEventListener("mouseleave", Swal.resumeTimer);
+  }
+});
+```
+
+<ParamField path="toast" type="boolean">
+  Display as toast notification (true)
+</ParamField>
+
+<ParamField path="position" type="string">
+  Toast position: "top-end"
+</ParamField>
+
+<ParamField path="timer" type="number">
+  Auto-close timer in milliseconds (2000)
+</ParamField>
+
+<ParamField path="timerProgressBar" type="boolean">
+  Show progress bar (true)
+</ParamField>
+
+---
+
+## userContext
+
+The userContext manages authentication state and user information across the application.
+
+### Context Setup
+
+**Source:** `src/App.jsx:31`
+
+```jsx
+export const userContext = React.createContext();
+```
+
+---
+
+### User State Structure
+
+**Source:** `src/App.jsx:49-54`
+
+```javascript
+const [user, setUser] = useState({
+  email: "",
+  password: "",
+  isNew: null,
+  enabled: false
+});
+```
+
+<ResponseField name="user" type="object">
+  User authentication state
+  
+  <ResponseField name="email" type="string">
+    User's email address
+  </ResponseField>
+  
+  <ResponseField name="password" type="string">
+    User's password (for authentication flow)
+  </ResponseField>
+  
+  <ResponseField name="isNew" type="boolean | null">
+    Whether the user is new (null if unknown)
+  </ResponseField>
+  
+  <ResponseField name="enabled" type="boolean">
+    Whether the user account is enabled
+  </ResponseField>
+</ResponseField>
+
+---
+
+### updateContextUser
+
+Function to update the user context state.
+
+<ParamField path="newUser" type="object" required>
+  New user object to set in context
+</ParamField>
+
+**Source:** `src/App.jsx:56-58`
+
+```jsx
+const updateContextUser = (newUser) => {
+  setUser(newUser);
+};
+```
+
+**Usage in Components:**
+
+```jsx
+import { useContext } from 'react';
+import { userContext } from './App';
+
+function LoginForm({ updateContextUser }) {
+  const handleLogin = async (credentials) => {
+    const user = await loginUser(credentials);
+    
+    // Update context with authenticated user
+    updateContextUser({
+      email: user.email,
+      isNew: false,
+      enabled: true
+    });
+  };
+  
+  return (/* form JSX */);
+}
+```
+
+---
+
+### Provider Implementation
+
+**Source:** `src/App.jsx:137-169`
+
+```jsx
+<userContext.Provider value={user}>
+  <div className={Styles.appContainer}>
+    {location.pathname === "/login" ? "" : <NavBar />}
+    <Routes>
+      <Route
+        path="/"
+        element={<Layout updateContextUser={updateContextUser} />}
+      />
+      <Route
+        path="/student/:id"
+        element={<Student updateContextUser={updateContextUser} />}
+      />
+      {/* Additional routes */}
+    </Routes>
+    {shouldShowFooter() && <Footer />}
+  </div>
+</userContext.Provider>
+```
+
+All routes receive `updateContextUser` as a prop to allow updating the user context from any component.
+
+---
+
+### Consuming userContext
+
+```jsx
+import { useContext } from 'react';
+import { userContext } from './App';
+
+function UserProfile() {
+  const user = useContext(userContext);
+  
+  return (
+    <div>
+      <p>Email: {user.email}</p>
+      <p>Status: {user.enabled ? 'Active' : 'Inactive'}</p>
+    </div>
+  );
+}
+```
+
+---
+
+## Session Management
+
+### localStorage Integration
+
+The application uses localStorage to persist user sessions:
+
+**Session Storage:** `src/App.jsx:60`
+
+```javascript
+const session = JSON.parse(localStorage.getItem("userOnSession"));
+```
+
+**Session Check:** `src/App.jsx:62-68`
+
+```javascript
+useEffect(() => {
+  getAllUser();
+  getAllCourses();
+  getAllCategories();
+  if (session) {
+    setLogged(!logged);
+  }
+}, []);
+```
+
+---
+
+### Logged State
+
+```javascript
+const [logged, setLogged] = useState(null);
+const logged2 = localStorage.getItem("logged");
+```
+
+**Usage in Routing:**
+
+```jsx
+{logged2 ? authenticatedRoutes : unauthenticatedRoutes}
+```
+
+---
+
+## Complete Integration Example
+
+Here's a complete example showing how to use both contexts together:
+
+```jsx
+import React from 'react';
+import { CartProvider, useCart } from './context/CartContext';
+import { userContext } from './App';
+import { ADD_TO_CART } from './context/CartTypes';
+
+function CourseList({ updateContextUser }) {
+  const user = React.useContext(userContext);
+  const { state, dispatch } = useCart();
+  
+  const handlePurchase = async (course) => {
+    if (!user.enabled) {
+      alert('Please log in to purchase courses');
+      return;
+    }
+    
+    // Add to cart
+    dispatch({
+      type: ADD_TO_CART,
+      payload: course
+    });
+  };
+  
+  return (
+    <div>
+      <h2>Available Courses</h2>
+      <p>Cart items: {state.cart.length}</p>
+      {/* Course list */}
+    </div>
+  );
+}
+
+// App setup
+function App() {
+  const [user, setUser] = useState({
+    email: "",
+    enabled: false
+  });
+  
+  const updateContextUser = (newUser) => {
+    setUser(newUser);
+  };
+  
+  return (
+    <userContext.Provider value={user}>
+      <CartProvider>
+        <CourseList updateContextUser={updateContextUser} />
+      </CartProvider>
+    </userContext.Provider>
+  );
+}
+```
+
+---
+
+## Best Practices
+
+### 1. Always Use Providers at Top Level
+
+```jsx
+// ✅ Correct
+<CartProvider>
+  <userContext.Provider value={user}>
+    <App />
+  </userContext.Provider>
+</CartProvider>
+
+// ❌ Wrong - userContext needs to be at top level
+<userContext.Provider value={user}>
+  <SomeComponent>
+    <CartProvider>
+      <App />
+    </CartProvider>
+  </SomeComponent>
+</userContext.Provider>
+```
+
+### 2. Error Handling with useCart
+
+```jsx
+try {
+  const { state, dispatch } = useCart();
+} catch (error) {
+  // Handle error - component not wrapped in CartProvider
+  console.error(error.message);
+}
+```
+
+### 3. Type Checking for Actions
+
+```jsx
+import { ADD_TO_CART, REMOVE_FROM_CART, CLEAR } from './context/CartTypes';
+
+// ✅ Use exported constants
+dispatch({ type: ADD_TO_CART, payload: course });
+
+// ❌ Don't use string literals
+dispatch({ type: "ADD_TO_CART", payload: course });
+```
+
+### 4. Session Validation
+
+```jsx
+const session = JSON.parse(localStorage.getItem("userOnSession"));
+
+// Always check if session exists before accessing properties
+if (session?.Payments) {
+  // Safe to access session.Payments
+}
+```

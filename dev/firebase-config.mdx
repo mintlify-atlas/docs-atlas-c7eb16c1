@@ -1,0 +1,344 @@
+---
+title: 'Firebase Configuration'
+description: 'Configure Firebase Storage for EducaStream media files'
+---
+
+## Overview
+
+EducaStream uses **Firebase Storage** to store and serve course-related media files including:
+
+- Course videos and lectures
+- Course thumbnail images
+- User profile pictures
+- Other course materials
+
+<Info>
+  Firebase Storage provides secure file uploads and downloads with built-in CDN distribution.
+</Info>
+
+## Firebase Setup
+
+<Steps>
+  <Step title="Create Firebase Project">
+    1. Go to [Firebase Console](https://console.firebase.google.com/)
+    2. Click **Add Project**
+    3. Enter your project name (e.g., "educastream")
+    4. Follow the setup wizard
+  </Step>
+
+  <Step title="Enable Firebase Storage">
+    1. In your Firebase project, navigate to **Build** → **Storage**
+    2. Click **Get Started**
+    3. Choose security rules (start in test mode for development)
+    4. Select a Cloud Storage location
+    5. Click **Done**
+  </Step>
+
+  <Step title="Register Web App">
+    1. In Project Settings, scroll to **Your apps**
+    2. Click the **Web** icon (`</>`)
+    3. Register your app with a nickname
+    4. You'll receive your Firebase configuration object
+  </Step>
+
+  <Step title="Copy Configuration">
+    From the Firebase Console, copy your configuration values:
+    
+    ```javascript
+    {
+      apiKey: "AIzaSy...",
+      authDomain: "your-project.firebaseapp.com",
+      projectId: "your-project-id",
+      storageBucket: "your-project.appspot.com",
+      messagingSenderId: "123456789",
+      appId: "1:123456789:web:abc123"
+    }
+    ```
+  </Step>
+</Steps>
+
+## Environment Variables
+
+Add your Firebase configuration to the `.env` file:
+
+```bash .env
+# Firebase Configuration
+VITE_API_KEY=AIzaSyXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+VITE_AUTH_DOMAIN=your-project.firebaseapp.com
+VITE_PROJECT_ID=your-project-id
+VITE_STORAGE_BUCKET=your-project.appspot.com
+VITE_MESSAGING_SENDER_ID=123456789012
+VITE_APP_ID=1:123456789012:web:abcdef123456
+```
+
+<Warning>
+  All environment variables for Vite must be prefixed with `VITE_` to be accessible in the client-side code.
+</Warning>
+
+## Firebase Implementation
+
+The Firebase configuration is implemented in `src/firebase/firebase.js:1-14`:
+
+```javascript firebase.js
+import { initializeApp } from "firebase/app";
+import { getStorage } from "firebase/storage";
+
+const firebaseConfig = {
+  apiKey: import.meta.env.VITE_API_KEY,
+  authDomain: import.meta.env.VITE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_APP_ID,
+};
+
+export const appFireBase = initializeApp(firebaseConfig);
+export const storage = getStorage(appFireBase);
+```
+
+### Key Components
+
+<CardGroup cols={2}>
+  <Card title="appFireBase" icon="fire">
+    Initialized Firebase app instance
+  </Card>
+  <Card title="storage" icon="database">
+    Firebase Storage service for file operations
+  </Card>
+</CardGroup>
+
+## Using Firebase Storage
+
+To upload or download files using Firebase Storage in your components:
+
+### Upload Files
+
+```javascript
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { storage } from "./firebase/firebase";
+
+const uploadFile = async (file) => {
+  // Create a reference to the file location
+  const storageRef = ref(storage, `courses/${file.name}`);
+  
+  // Upload the file
+  const snapshot = await uploadBytes(storageRef, file);
+  
+  // Get the download URL
+  const downloadURL = await getDownloadURL(snapshot.ref);
+  
+  return downloadURL;
+};
+```
+
+### Download URLs
+
+```javascript
+import { ref, getDownloadURL } from "firebase/storage";
+import { storage } from "./firebase/firebase";
+
+const getFileURL = async (filePath) => {
+  const storageRef = ref(storage, filePath);
+  const url = await getDownloadURL(storageRef);
+  return url;
+};
+```
+
+### Delete Files
+
+```javascript
+import { ref, deleteObject } from "firebase/storage";
+import { storage } from "./firebase/firebase";
+
+const deleteFile = async (filePath) => {
+  const storageRef = ref(storage, filePath);
+  await deleteObject(storageRef);
+};
+```
+
+## Storage Security Rules
+
+For production, configure proper security rules in Firebase Console:
+
+<Tabs>
+  <Tab title="Development">
+    Allow all reads and writes (testing only):
+    
+    ```javascript
+    rules_version = '2';
+    service firebase.storage {
+      match /b/{bucket}/o {
+        match /{allPaths=**} {
+          allow read, write: if true;
+        }
+      }
+    }
+    ```
+    
+    <Warning>
+      This is insecure and should only be used during development!
+    </Warning>
+  </Tab>
+
+  <Tab title="Production">
+    Restrict based on authentication:
+    
+    ```javascript
+    rules_version = '2';
+    service firebase.storage {
+      match /b/{bucket}/o {
+        // Allow authenticated users to read all files
+        match /{allPaths=**} {
+          allow read: if request.auth != null;
+        }
+        
+        // Only instructors can upload courses
+        match /courses/{courseId}/{fileName} {
+          allow write: if request.auth != null 
+            && request.auth.token.role == 'instructor';
+        }
+        
+        // Users can manage their own profile pictures
+        match /profiles/{userId}/{fileName} {
+          allow write: if request.auth != null 
+            && request.auth.uid == userId;
+        }
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Storage Organization
+
+Organize your files in a structured manner:
+
+```
+storage-bucket/
+├── courses/
+│   ├── {courseId}/
+│   │   ├── thumbnail.jpg
+│   │   ├── video-1.mp4
+│   │   ├── video-2.mp4
+│   │   └── materials.pdf
+├── profiles/
+│   ├── {userId}/
+│   │   └── avatar.jpg
+└── lectures/
+    ├── {lectureId}/
+    │   └── video.mp4
+```
+
+## Best Practices
+
+<Check>Use unique identifiers (courseId, userId) in file paths</Check>
+<Check>Implement file size limits for uploads</Check>
+<Check>Validate file types before uploading</Check>
+<Check>Use loading states during uploads/downloads</Check>
+<Check>Handle errors gracefully with user feedback</Check>
+<Check>Compress images before uploading</Check>
+<Check>Use appropriate MIME types</Check>
+
+## Error Handling
+
+Always handle Firebase Storage errors:
+
+```javascript
+import { ref, uploadBytes } from "firebase/storage";
+import { storage } from "./firebase/firebase";
+
+const uploadWithErrorHandling = async (file) => {
+  try {
+    const storageRef = ref(storage, `courses/${file.name}`);
+    const snapshot = await uploadBytes(storageRef, file);
+    const url = await getDownloadURL(snapshot.ref);
+    return { success: true, url };
+  } catch (error) {
+    console.error("Upload failed:", error);
+    
+    // Handle specific error codes
+    if (error.code === 'storage/unauthorized') {
+      return { success: false, error: 'Not authorized to upload' };
+    }
+    if (error.code === 'storage/canceled') {
+      return { success: false, error: 'Upload canceled' };
+    }
+    if (error.code === 'storage/quota-exceeded') {
+      return { success: false, error: 'Storage quota exceeded' };
+    }
+    
+    return { success: false, error: 'Upload failed' };
+  }
+};
+```
+
+## Common Error Codes
+
+<AccordionGroup>
+  <Accordion title="storage/unauthorized">
+    User doesn't have permission to access the object. Check your security rules.
+  </Accordion>
+
+  <Accordion title="storage/canceled">
+    User canceled the operation. This is normal for cancelled uploads.
+  </Accordion>
+
+  <Accordion title="storage/unknown">
+    Unknown error occurred. Check your internet connection and Firebase configuration.
+  </Accordion>
+
+  <Accordion title="storage/quota-exceeded">
+    Storage quota has been exceeded. Upgrade your Firebase plan or clean up old files.
+  </Accordion>
+
+  <Accordion title="storage/invalid-checksum">
+    File on client doesn't match the checksum of the file received by server. Retry the upload.
+  </Accordion>
+</AccordionGroup>
+
+## Monitoring Usage
+
+<Steps>
+  <Step title="Check Storage Usage">
+    In Firebase Console, go to **Storage** to view:
+    - Total storage used
+    - Number of files
+    - Download bandwidth
+  </Step>
+
+  <Step title="Set Up Billing Alerts">
+    Configure alerts for storage quota and bandwidth usage to avoid unexpected charges.
+  </Step>
+</Steps>
+
+## Testing
+
+Verify your Firebase configuration:
+
+```javascript
+import { storage } from "./firebase/firebase";
+
+console.log("Firebase Storage initialized:", storage);
+console.log("Storage bucket:", storage.app.options.storageBucket);
+```
+
+<Check>Storage instance exists</Check>
+<Check>Bucket name is correct</Check>
+<Check>No console errors on initialization</Check>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Stripe Integration" icon="credit-card" href="/dev/stripe-integration">
+    Configure payment processing
+  </Card>
+  <Card title="Architecture" icon="diagram-project" href="/dev/architecture">
+    Understand the application structure
+  </Card>
+</CardGroup>
+
+## Additional Resources
+
+<Card title="Firebase Storage Docs" icon="fire" href="https://firebase.google.com/docs/storage">
+  Official Firebase Storage documentation
+</Card>

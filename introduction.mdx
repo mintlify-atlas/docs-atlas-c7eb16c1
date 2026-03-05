@@ -1,0 +1,114 @@
+---
+title: Welcome to EducaStream
+description: An online course platform connecting students and instructors with comprehensive learning management features
+---
+
+<img
+  className="block dark:hidden"
+  src="/images/hero-light.svg"
+  alt="EducaStream Hero Light"
+/>
+<img
+  className="hidden dark:block"
+  src="/images/hero-dark.svg"
+  alt="EducaStream Hero Dark"
+/>
+
+## What is EducaStream?
+
+EducaStream is a full-featured online learning platform that enables instructors to create and manage courses while providing students with an intuitive interface for discovering, purchasing, and engaging with educational content.
+
+<CardGroup cols={2}>
+  <Card
+    title="For Students"
+    icon="graduation-cap"
+    href="/students/browsing-courses"
+  >
+    Discover courses, enroll, and learn at your own pace with our streamlined learning interface
+  </Card>
+  <Card
+    title="For Instructors"
+    icon="chalkboard-user"
+    href="/instructors/creating-courses"
+  >
+    Create engaging courses, manage content, and track student progress
+  </Card>
+  <Card
+    title="Platform Features"
+    icon="rocket"
+    href="/features/cart-checkout"
+  >
+    Explore shopping cart, payments, search filters, and user profiles
+  </Card>
+  <Card
+    title="Developer Guide"
+    icon="code"
+    href="/dev/architecture"
+  >
+    Technical documentation for developers working with the platform
+  </Card>
+</CardGroup>
+
+## Key Features
+
+<AccordionGroup>
+  <Accordion title="Course Browsing & Discovery">
+    Advanced search and filtering by category, price, and rating. Browse the latest courses, top-rated content, and special discounts.
+  </Accordion>
+
+  <Accordion title="Shopping Cart & Payment">
+    Integrated Stripe payment processing with a full-featured shopping cart. Secure checkout flow with email confirmations.
+  </Accordion>
+
+  <Accordion title="Learning Management">
+    Separate dashboards for students and instructors. Video player integration with React Player. Track progress through course lectures.
+  </Accordion>
+
+  <Accordion title="Course Creation">
+    Instructors can create courses with multiple lectures, upload video content to Firebase storage, and manage student enrollments.
+  </Accordion>
+
+  <Accordion title="Rating & Reviews">
+    Students can rate courses and leave reviews. Courses are ranked by average rating to help students make informed decisions.
+  </Accordion>
+
+  <Accordion title="User Authentication">
+    Role-based access control with separate views for students, instructors, and administrators. Secure authentication flow.
+  </Accordion>
+</AccordionGroup>
+
+## Getting Started
+
+<Steps>
+  <Step title="Explore the Platform">
+    Learn about EducaStream's features and how students and instructors interact with the platform in our [Quickstart Guide](/quickstart).
+  </Step>
+  
+  <Step title="Student Experience">
+    Discover how to browse courses, make purchases, and engage with learning content in the [For Students](/students/browsing-courses) section.
+  </Step>
+  
+  <Step title="Instructor Tools">
+    Learn how to create courses, upload content, and manage students in the [For Instructors](/instructors/creating-courses) section.
+  </Step>
+  
+  <Step title="Developer Setup">
+    For developers, check out the [Development Setup](/dev/setup) guide to get the platform running locally.
+  </Step>
+</Steps>
+
+## Technology Stack
+
+EducaStream is built with modern web technologies:
+
+- **Frontend Framework**: React 18 with Vite for fast development
+- **Routing**: React Router v6 for navigation
+- **State Management**: React Context API for cart and user state
+- **Payments**: Stripe integration for secure transactions
+- **Storage**: Firebase for media file storage
+- **Email**: EmailJS for notifications
+- **UI Components**: Custom component library with CSS modules
+
+<Note>
+  EducaStream is designed as a SaaS platform for online learning, providing all the tools needed for a complete e-learning marketplace.
+</Note>

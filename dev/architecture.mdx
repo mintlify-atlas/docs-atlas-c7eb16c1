@@ -1,0 +1,258 @@
+---
+title: 'Architecture Overview'
+description: 'Technical architecture and technology stack of EducaStream'
+---
+
+## Technology Stack
+
+EducaStream is built with a modern React-based architecture using Vite as the build tool and bundler.
+
+### Frontend Framework
+
+<CardGroup cols={2}>
+  <Card title="React 18.2" icon="react">
+    Core UI library with hooks and context API
+  </Card>
+  <Card title="Vite 4.4" icon="bolt">
+    Next-generation frontend build tool
+  </Card>
+  <Card title="React Router 6" icon="route">
+    Client-side routing and navigation
+  </Card>
+  <Card title="Axios" icon="globe">
+    HTTP client for API communication
+  </Card>
+</CardGroup>
+
+### Core Dependencies
+
+The application relies on several key libraries as defined in `package.json:12-28`:
+
+```json
+"dependencies": {
+  "@emailjs/browser": "^3.11.0",
+  "@stripe/react-stripe-js": "^2.3.1",
+  "@stripe/stripe-js": "^2.1.11",
+  "axios": "^1.5.1",
+  "dotenv": "^16.3.1",
+  "firebase": "^10.5.2",
+  "react": "^18.2.0",
+  "react-dom": "^18.2.0",
+  "react-multi-carousel": "^2.8.4",
+  "react-player": "^2.13.0",
+  "react-responsive-carousel": "^3.2.23",
+  "react-router": "^6.18.0",
+  "react-router-dom": "^6.17.0",
+  "resend": "^2.0.0",
+  "stripe": "^14.3.0",
+  "sweetalert2": "^11.9.0"
+}
+```
+
+## Application Architecture
+
+### Entry Point
+
+The application bootstraps from `main.jsx:10-18` with the following configuration:
+
+```jsx
+import { Suspense } from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App.jsx";
+import { BrowserRouter } from "react-router-dom";
+import axios from "axios";
+import { CartProvider } from "./context/CartContext.jsx";
+
+axios.defaults.baseURL = "https://backend-educastream-production.up.railway.app/";
+
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <Suspense>
+    <BrowserRouter>
+      <CartProvider>
+        <App />
+      </CartProvider>
+    </BrowserRouter>
+  </Suspense>
+);
+```
+
+### Backend API
+
+<Info>
+  The frontend connects to a Railway-hosted backend API:
+  `https://backend-educastream-production.up.railway.app/`
+</Info>
+
+### Build Configuration
+
+Vite configuration from `vite.config.js:1-8`:
+
+```javascript
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+
+export default defineConfig({
+  plugins: [react()],
+  manifest: true,
+});
+```
+
+## Application Structure
+
+### Context Providers
+
+EducaStream uses React Context for state management:
+
+1. **UserContext** (`App.jsx:31`) - Manages user authentication and profile data
+2. **CartProvider** (`CartContext.jsx:94-106`) - Manages shopping cart state with localStorage persistence
+
+### State Management Pattern
+
+The cart uses a reducer pattern with the following actions:
+
+- `ADD_TO_CART` - Adds courses to cart with duplicate checking
+- `REMOVE_FROM_CART` - Removes courses from cart
+- `CLEAR` - Clears the entire cart
+
+```jsx
+const initialState = {
+  cart: JSON.parse(localStorage.getItem("cart")) || [],
+};
+```
+
+### Storage Strategy
+
+<CardGroup cols={2}>
+  <Card title="localStorage" icon="database">
+    Cart items, user session, and payment data
+  </Card>
+  <Card title="Firebase Storage" icon="fire">
+    Course videos, images, and media files
+  </Card>
+</CardGroup>
+
+## Routing Architecture
+
+### Route Protection
+
+The application implements role-based routing from `App.jsx:73-151`:
+
+<Steps>
+  <Step title="Admin Routes">
+    Available only to users with `isAdmin` flag:
+    - `/admin/dashboard/:id` - Admin dashboard
+  </Step>
+  
+  <Step title="Authenticated Routes">
+    Available to logged-in users:
+    - `/student/:id` - Student profile
+    - `/instructor/:id` - Instructor dashboard
+    - `/cart/:id` - Shopping cart
+    - `/config/:id` - User settings
+  </Step>
+  
+  <Step title="Public Routes">
+    Available to all visitors:
+    - `/` - Home/Landing page
+    - `/courses/` - Course catalog
+    - `/detailCourse/:id` - Course details
+    - `/login/` - Authentication
+  </Step>
+</Steps>
+
+### Authentication Flow
+
+```jsx
+const session = JSON.parse(localStorage.getItem("userOnSession"));
+const logged2 = localStorage.getItem("logged");
+
+{session?.isAdmin ? adminRoutes : unauthenticatedRoutes}
+{logged2 ? authenticatedRoutes : unauthenticatedRoutes}
+```
+
+## Key Features
+
+### Course Management
+
+- Course creation and editing (`/instructor/:id/form`)
+- Lecture creation (`/instructor/:courseId/createLecture`)
+- Course catalog browsing
+- Detailed course views with video playback
+
+### Payment Processing
+
+- Stripe integration for checkout
+- Cart management with localStorage persistence
+- Payment success handling (`/payment/checkout/sucess`)
+
+### User Roles
+
+<Tabs>
+  <Tab title="Student">
+    - Browse and purchase courses
+    - Access purchased content
+    - View class lists and lectures
+    - Manage cart and payments
+  </Tab>
+  
+  <Tab title="Instructor">
+    - Create and edit courses
+    - Upload lectures and materials
+    - Send emails to students
+    - Manage course content
+  </Tab>
+  
+  <Tab title="Admin">
+    - Access admin dashboard
+    - Full platform management
+    - User and course oversight
+  </Tab>
+</Tabs>
+
+## Development Scripts
+
+From `package.json:6-10`:
+
+<CodeGroup>
+```bash npm
+npm run dev      # Start development server
+npm run build    # Build for production
+npm run lint     # Run ESLint
+npm run preview  # Preview production build
+```
+
+```bash yarn
+yarn dev         # Start development server
+yarn build       # Build for production
+yarn lint        # Run ESLint
+yarn preview     # Preview production build
+```
+
+```bash pnpm
+pnpm dev         # Start development server
+pnpm build       # Build for production
+pnpm lint        # Run ESLint
+pnpm preview     # Preview production build
+```
+</CodeGroup>
+
+## Performance Features
+
+<Check>Suspense for code splitting and lazy loading</Check>
+<Check>Vite for fast HMR and optimized builds</Check>
+<Check>localStorage for reduced API calls</Check>
+<Check>React Router for client-side navigation</Check>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Setup Guide" icon="rocket" href="/dev/setup">
+    Get your development environment ready
+  </Card>
+  <Card title="Firebase Config" icon="fire" href="/dev/firebase-config">
+    Configure Firebase services
+  </Card>
+  <Card title="Stripe Integration" icon="credit-card" href="/dev/stripe-integration">
+    Set up payment processing
+  </Card>
+</CardGroup>

@@ -1,0 +1,471 @@
+---
+title: "Component Styling"
+description: "CSS Modules and styling patterns used in EducaStream components"
+---
+
+## Styling Approach
+
+EducaStream uses **CSS Modules** for component styling, providing scoped styles that prevent naming conflicts and promote maintainability.
+
+## CSS Modules Pattern
+
+Every component has its own CSS module file following the naming convention: `ComponentName.module.css`
+
+### File Structure
+
+```
+Components/
+└── Button/
+    ├── Button.jsx
+    └── Button.module.css
+```
+
+### Import Pattern
+
+```jsx
+import Styles from "./ComponentName.module.css";
+
+const Component = () => {
+  return <div className={Styles.containerClass}>Content</div>;
+};
+```
+
+## Component Styling Examples
+
+<Tabs>
+  <Tab title="Button">
+    **Button Component Styles**
+    
+    ```css
+    /* Button.module.css */
+    .buttonContainer .cssButtonSharpBlue {
+      min-width: 100px;
+      height: auto;
+      color: var(--color-background-button);
+      padding: 5px 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease-out;
+      position: relative;
+      display: inline-block;
+      outline: none;
+      border: 2px solid var(--color-primary);
+      background: var(--color-primary);
+      border-radius: var(--radius);
+    }
+    
+    .buttonContainer .cssButtonSharpBlue:hover {
+      background: var(--color-background-button);
+      color: var(--color-primary);
+    }
+    ```
+    
+    **Usage:**
+    ```jsx
+    <div className={Styles.buttonContainer}>
+      <button className={Styles.cssButtonSharpBlue}>
+        {text}
+      </button>
+    </div>
+    ```
+  </Tab>
+  
+  <Tab title="Card">
+    **Card Component Styles**
+    
+    ```css
+    /* Card.module.css */
+    .cardContainer {
+      display: flex;
+      width: 90%;
+      height: 200px;
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--box-shadow);
+      border: 2px solid transparent;
+      transition: all 0.2s ease-out;
+      margin: auto;
+    }
+    
+    .cardContainer:hover {
+      border: 2px solid var(--color-hover);
+    }
+    
+    .imgContainer {
+      width: 25%;
+      height: 100%;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .imgContainer img {
+      min-width: 100%;
+      min-height: 100%;
+      object-fit: cover;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+    ```
+    
+    **Layout Structure:**
+    - Card: 90% width, 200px height
+    - Image: 25% of card width
+    - Content: 75% of card width
+  </Tab>
+  
+  <Tab title="NavBar">
+    **NavBar Component Styles**
+    
+    ```css
+    /* NavBar.module.css */
+    .navbarContainer {
+      width: 100%;
+      height: 70px;
+      background-color: var(--color-background);
+    }
+    
+    nav {
+      display: flex;
+      align-items: center;
+      width: 90%;
+      height: 100%;
+      justify-content: space-between;
+      transition: box-shadow 0.1s ease 0s, background-color 0.1s ease 0s;
+      color: var(--color-text-primary);
+      position: static;
+      margin: auto;
+    }
+    
+    .navbarLinks {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      width: 100%;
+      height: 0;
+      top: 0;
+      left: 0;
+      color: var(--text-secondary-color);
+      background-color: rgba(0, 0, 0, 0.9);
+      position: absolute;
+      z-index: 98;
+      opacity: 0;
+      transition: height 0.3s ease, opacity 0.3s ease;
+    }
+    
+    .navbarLinks.active {
+      height: 100vh;
+      opacity: 1;
+    }
+    ```
+    
+    **Responsive Design:**
+    - Mobile: Fullscreen overlay menu
+    - Desktop (>768px): Horizontal navigation
+  </Tab>
+</Tabs>
+
+## CSS Custom Properties
+
+EducaStream uses CSS custom properties (variables) for consistent theming:
+
+### Color Variables
+
+```css
+/* Global CSS variables used throughout components */
+var(--color-primary)              /* Primary brand color */
+var(--color-background)           /* Main background color */
+var(--color-background-button)    /* Button background */
+var(--color-background-off-two)   /* Secondary background */
+var(--color-background-details)   /* Detail sections */
+var(--color-text-primary)         /* Primary text color */
+var(--color-text-secondary)       /* Secondary text color */
+var(--color-text-off)             /* Muted text color */
+var(--color-hover)                /* Hover state color */
+```
+
+### Spacing & Layout Variables
+
+```css
+var(--radius)        /* Border radius */
+var(--box-shadow)    /* Box shadow */
+var(--pd-2)          /* Padding level 2 */
+```
+
+<Note>
+These CSS variables enable consistent theming across all components and make it easy to implement dark/light mode switching.
+</Note>
+
+## Responsive Design Patterns
+
+<Tabs>
+  <Tab title="Mobile First">
+    **Mobile-First Approach**
+    
+    Components are styled for mobile by default, with media queries for larger screens:
+    
+    ```css
+    /* Mobile styles (default) */
+    .navbarLinks {
+      display: flex;
+      flex-direction: column;
+      position: absolute;
+      opacity: 0;
+    }
+    
+    /* Desktop styles */
+    @media screen and (min-width: 768px) {
+      .navbarLinks {
+        display: flex;
+        opacity: 1;
+        position: relative;
+      }
+      
+      .navbarLinks ul {
+        display: flex;
+        gap: 17px;
+      }
+      
+      .navbarToggle {
+        display: none;
+      }
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Breakpoints">
+    **Common Breakpoints**
+    
+    ```css
+    /* Small devices */
+    @media (max-width: 425px) {
+      nav {
+        margin: 0px;
+        justify-content: space-around;
+      }
+    }
+    
+    /* Tablets and up */
+    @media screen and (min-width: 768px) {
+      .navbarLinks {
+        position: relative;
+      }
+    }
+    ```
+    
+    **Standard breakpoints:**
+    - Mobile: < 425px
+    - Tablet: 768px+
+    - Desktop: 1024px+
+  </Tab>
+</Tabs>
+
+## Common Styling Patterns
+
+### Layout Containers
+
+```css
+/* Centered container pattern */
+.container {
+  width: 90%;
+  margin: auto;
+}
+
+/* Flexbox column layout */
+.contentContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--pd-2);
+}
+```
+
+### Interactive Elements
+
+```css
+/* Hover effects */
+.cardContainer:hover {
+  border: 2px solid var(--color-hover);
+}
+
+.imgContainer img {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+/* Button transitions */
+.cssButtonSharpBlue {
+  transition: all 0.3s ease-out;
+}
+
+.cssButtonSharpBlue:hover {
+  background: var(--color-background-button);
+  color: var(--color-primary);
+}
+```
+
+### Image Handling
+
+```css
+/* Responsive images */
+.imgContainer img {
+  min-width: 100%;
+  min-height: 100%;
+  object-fit: cover;
+}
+
+/* Logo sizing */
+.navbarLogo img {
+  height: 50px;
+}
+
+/* Profile images */
+.imgProfile img {
+  width: 35px;
+  height: 35px;
+  border-radius: 25px;
+}
+```
+
+## Modal & Overlay Styles
+
+<Tabs>
+  <Tab title="Modal">
+    **Modal Component Styling**
+    
+    ```css
+    .modal {
+      background-color: var(--color-background-details);
+      box-shadow: var(--box-shadow);
+      border-radius: 0 0 5px 5px;
+      position: absolute;
+      top: 35px;
+      right: 0;
+      padding: 30px;
+      z-index: 97;
+      min-width: 300px;
+    }
+    
+    .modalContent {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      color: var(--color-text-primary);
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Menu Overlay">
+    **Mobile Menu Overlay**
+    
+    ```css
+    .navbarLinks {
+      background-color: rgba(0, 0, 0, 0.9);
+      position: absolute;
+      z-index: 98;
+      opacity: 0;
+      transition: height 0.3s ease, opacity 0.3s ease;
+    }
+    
+    .navbarLinks.active {
+      height: 100vh;
+      opacity: 1;
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Typography Patterns
+
+```css
+/* Price display */
+.contentTopPrice {
+  color: var(--color-primary);
+  font-weight: bold;
+  font-size: 20px;
+}
+
+/* Discounted price */
+.priceWhitOutDiscount {
+  font-size: 12px;
+  color: var(--color-text-off);
+  text-decoration: line-through;
+}
+
+/* Category badges */
+.title span {
+  color: var(--color-text-secondary);
+  background-color: var(--color-background-off-two);
+  padding: 3px 7px;
+  border-radius: 25px;
+  font-size: 10px;
+  font-weight: bold;
+}
+```
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="CSS Modules" icon="cube">
+    Always use CSS Modules for scoped styling
+  </Card>
+  <Card title="Variables" icon="palette">
+    Use CSS custom properties for theming
+  </Card>
+  <Card title="Mobile First" icon="mobile">
+    Design for mobile, enhance for desktop
+  </Card>
+  <Card title="Transitions" icon="wand-magic-sparkles">
+    Add smooth transitions for interactions
+  </Card>
+</CardGroup>
+
+<Warning>
+Avoid inline styles. Use CSS modules to keep styling consistent and maintainable. Inline styles should only be used for dynamic values that cannot be predefined.
+</Warning>
+
+## Creating Styled Components
+
+When creating a new component:
+
+<Steps>
+  <Step title="Create CSS Module">
+    Create a `.module.css` file alongside your component
+    
+    ```bash
+    Components/NewComponent/NewComponent.module.css
+    ```
+  </Step>
+  
+  <Step title="Import Styles">
+    Import the CSS module in your component
+    
+    ```jsx
+    import Styles from "./NewComponent.module.css";
+    ```
+  </Step>
+  
+  <Step title="Use Class Names">
+    Apply styles using the Styles object
+    
+    ```jsx
+    <div className={Styles.container}>
+      <h2 className={Styles.title}>Title</h2>
+    </div>
+    ```
+  </Step>
+  
+  <Step title="Use CSS Variables">
+    Leverage existing CSS custom properties
+    
+    ```css
+    .container {
+      background: var(--color-background);
+      color: var(--color-text-primary);
+    }
+    ```
+  </Step>
+</Steps>

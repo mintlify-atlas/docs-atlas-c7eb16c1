@@ -1,80 +1,355 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: "Quickstart Guide"
+description: "Get started with EducaStream as a student or instructor in minutes"
 ---
 
-## Get started in three steps
+Welcome to EducaStream! This guide will help you get started with the platform, whether you're a student looking to learn or an instructor ready to teach.
 
-Get your documentation site running locally and make your first customization.
-
-### Step 1: Set up your local environment
-
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 2: Deploy your changes
-
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
-
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
-
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 3: Go live
-
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
-
-## Next steps
-
-Now that you have your docs running, explore these key features:
+## Choose Your Path
 
 <CardGroup cols={2}>
+  <Card title="Start as a Student" icon="graduation-cap" href="#student-quickstart">
+    Browse courses, enroll, and begin your learning journey
+  </Card>
+  
+  <Card title="Start as an Instructor" icon="chalkboard-user" href="#instructor-quickstart">
+    Create courses, upload lessons, and teach students
+  </Card>
+</CardGroup>
 
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
+---
 
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
+## Student Quickstart
 
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
+### Step 1: Create Your Account
 
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
+<Steps>
+  <Step title="Register with Email or Google">
+    Navigate to the login page and choose your registration method:
+    
+    **Email Registration:**
+    ```javascript
+    // User registration with email
+    const usuario = {
+      email: email,
+      password: password,
+      photoURL: user,
+      role_student: true,
+      role_instructor: false
+    };
+    
+    postUser(usuario);
+    ```
+    
+    **Google Authentication:**
+    - Click the Google sign-in button
+    - Authorize with your Google account
+    - Your profile is automatically created
+    
+    <Note>
+      Google sign-in automatically grants both student and instructor roles, allowing you to switch between learning and teaching.
+    </Note>
+  </Step>
+  
+  <Step title="Complete Your Profile">
+    After registration, you'll be redirected to the courses page. Your basic profile is created with:
+    - Email address
+    - Name (from Google) or default settings
+    - Profile photo
+    - Student role enabled by default
+  </Step>
+</Steps>
 
+### Step 2: Browse and Find Courses
+
+<Steps>
+  <Step title="Explore Available Courses">
+    The courses page displays all active courses sorted by creation date (newest first):
+    
+    ```javascript
+    // Courses are automatically sorted by creation date
+    data.sort((a, b) => {
+      const fechaA = new Date(a.createdAt);
+      const fechaB = new Date(b.createdAt);
+      return fechaB - fechaA;
+    });
+    ```
+    
+    Use the search and filter options to find courses:
+    - **Search by title**: Type keywords in the search bar
+    - **Filter by category**: Select from available categories
+    - **Sort by price**: Order courses from lowest to highest or vice versa
+  </Step>
+  
+  <Step title="View Course Details">
+    Click on any course to see:
+    - Course title and description
+    - Complete lesson breakdown by section
+    - Total duration and number of classes
+    - Student ratings and reviews
+    - Pricing information
+    
+    <Tip>
+      Check the ratings to see what other students think about the course before enrolling.
+    </Tip>
+  </Step>
+</Steps>
+
+### Step 3: Enroll in a Course
+
+<Steps>
+  <Step title="Add to Cart">
+    From the course detail page, click **Add to Cart** to add the course to your shopping cart:
+    
+    ```javascript
+    // Course is added with discounted price if applicable
+    const newPrice = dataDetail.price - 
+      (dataDetail.price * dataDetail.percentageDiscount) / 100;
+    
+    dispatch({ type: "ADD_TO_CART", payload: productToAddToCart });
+    ```
+  </Step>
+  
+  <Step title="Review Your Cart">
+    Navigate to your cart to review:
+    - All selected courses
+    - Individual course prices
+    - Total purchase amount
+    
+    You can remove courses from your cart at any time before checkout.
+  </Step>
+  
+  <Step title="Complete Purchase">
+    Click **Finalizar Compra** to process your enrollment:
+    
+    ```javascript
+    // Payment processes cart items and enrolls you in courses
+    await axios.post("payment/enrollment", {
+      cart,
+      id,
+      email,
+      id_payment
+    });
+    ```
+    
+    <Warning>
+      Once payment is complete, courses are immediately available in your student dashboard.
+    </Warning>
+  </Step>
+</Steps>
+
+### Step 4: Access Your Courses
+
+<Steps>
+  <Step title="Go to Student Dashboard">
+    Navigate to your student area to see all enrolled courses. Each course card shows:
+    - Course title and image
+    - Progress tracking
+    - Rating option
+    - Access to available classes
+  </Step>
+  
+  <Step title="Start Learning">
+    Click **Clases disponibles** on any course to view and access lessons organized by section. Navigate through lessons sequentially to track your progress.
+  </Step>
+  
+  <Step title="Rate Your Experience">
+    After completing a course, share your feedback:
+    
+    ```javascript
+    // Students can rate courses 1-5 stars with comments
+    postRating(course_id, user_id, rating, comment);
+    ```
+    
+    You can modify your rating at any time from the student dashboard.
+  </Step>
+</Steps>
+
+---
+
+## Instructor Quickstart
+
+### Step 1: Set Up Your Instructor Account
+
+<Steps>
+  <Step title="Register or Sign In">
+    Create an account using Google authentication for automatic instructor access, or request instructor permissions after email registration.
+    
+    <Info>
+      Google sign-in provides both `role_instructor: true` and `role_student: true` by default.
+    </Info>
+  </Step>
+  
+  <Step title="Access Instructor Dashboard">
+    Navigate to your instructor panel to manage your courses and create new content.
+  </Step>
+</Steps>
+
+### Step 2: Create Your First Course
+
+<Steps>
+  <Step title="Fill Course Information">
+    From the course creation form, provide:
+    
+    ```javascript
+    const course = {
+      title: "",           // Course name (max 70 characters)
+      description: "",     // Brief description (max 90 characters)
+      instructor_id: id,   // Your instructor ID
+      category: "",        // Select from available categories
+      image: "",          // Course thumbnail
+      sections: "",       // Number of sections
+      price: 1.00        // Price in USD (min $1.00, max $9,999.99)
+    };
+    ```
+    
+    <Tip>
+      Choose a clear, descriptive title that accurately represents your course content.
+    </Tip>
+  </Step>
+  
+  <Step title="Upload Course Image">
+    Select an engaging thumbnail image for your course. Images are stored in Firebase Storage:
+    
+    ```javascript
+    // Image upload to Firebase
+    const imageRef = ref(storage, `courses/${nombreCurso}/${imageFile.name}`);
+    await uploadBytes(imageRef, imageFile);
+    const path = await getDownloadURL(imageRef);
+    ```
+  </Step>
+  
+  <Step title="Set Category and Sections">
+    - Choose the most relevant category from the dropdown
+    - Define the number of sections to organize your lessons
+    - Set a competitive price for your course
+  </Step>
+  
+  <Step title="Submit Course">
+    Click **Crear curso** to publish. Your course will be created and appear in the courses catalog:
+    
+    ```javascript
+    // Course creation endpoint
+    await axios.post("/courses/create", course);
+    ```
+    
+    <Note>
+      After creation, you'll be redirected to the courses page where you can find your new course.
+    </Note>
+  </Step>
+</Steps>
+
+### Step 3: Add Lessons to Your Course
+
+<Steps>
+  <Step title="Navigate to Course Editor">
+    From your instructor dashboard, select the course you want to edit and access the lesson creation interface.
+  </Step>
+  
+  <Step title="Create Lesson Content">
+    For each lesson, provide:
+    - Lesson title
+    - Section assignment (1 to your defined section count)
+    - Video content or materials
+    - Duration information
+    
+    Lessons are organized by sections for better course structure.
+  </Step>
+  
+  <Step title="Publish Lessons">
+    Save each lesson to make it available to enrolled students. Students will see lessons organized by section in sequential order.
+  </Step>
+</Steps>
+
+### Step 4: Manage Your Courses
+
+<Steps>
+  <Step title="Edit Course Details">
+    Update course information, pricing, or content at any time using the course update endpoint:
+    
+    ```javascript
+    // Update existing course
+    await axios.put(`/courses/${courseId}`, updatedCourseData);
+    ```
+  </Step>
+  
+  <Step title="Monitor Student Enrollments">
+    Track which students have enrolled in your courses through the instructor dashboard.
+  </Step>
+  
+  <Step title="Review Course Ratings">
+    See student feedback and ratings to improve your course content and teaching approach.
+  </Step>
+</Steps>
+
+---
+
+## Key Platform Features
+
+<AccordionGroup>
+  <Accordion title="Shopping Cart System" icon="cart-shopping">
+    Students can add multiple courses to their cart before checkout. The cart:
+    - Persists across sessions
+    - Calculates total pricing automatically
+    - Applies discounts when available
+    - Allows removal of individual items
+  </Accordion>
+  
+  <Accordion title="Course Search and Filtering" icon="filter">
+    Find courses easily with multiple filter options:
+    - **Text Search**: Search by course title
+    - **Category Filter**: Browse courses by category
+    - **Price Sorting**: Order by price (ascending or descending)
+    - **Reset Filters**: Clear all filters to view all courses
+    
+    ```javascript
+    // Filter by category
+    const url = `/courses?category=${categoryFilter}`;
+    
+    // Filter by title
+    const url = `/courses?title=${searchTerm}`;
+    ```
+  </Accordion>
+  
+  <Accordion title="Rating System" icon="star">
+    Students can rate completed courses with:
+    - Star rating (1-5 stars)
+    - Written comments
+    - Ability to modify ratings later
+    
+    Ratings help other students make informed decisions and provide valuable feedback to instructors.
+  </Accordion>
+  
+  <Accordion title="Firebase Integration" icon="fire">
+    The platform uses Firebase for:
+    - **Authentication**: Email/password and Google OAuth
+    - **Storage**: Course images and media files
+    - **Security**: Secure user data and course content
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="API Reference" icon="code" href="/api/utils-functions">
+    Explore the complete API documentation
+  </Card>
+  
+  <Card title="Course Management" icon="book-open" href="/instructors/managing-content">
+    Learn advanced course creation techniques
+  </Card>
+  
+  <Card title="Payment System" icon="credit-card" href="/features/cart-checkout">
+    Understand the enrollment and payment flow
+  </Card>
+  
+  <Card title="User Profiles" icon="users" href="/features/user-profiles">
+    Learn about user profiles and settings
+  </Card>
 </CardGroup>
 
 <Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
+  Need help? The platform is built with React and Vite, using Firebase for authentication and storage. Check the source code for detailed implementation examples.
 </Note>

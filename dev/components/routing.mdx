@@ -1,0 +1,475 @@
+---
+title: "Routing Configuration"
+description: "Understanding the routing structure and navigation in EducaStream"
+---
+
+## Routing Overview
+
+EducaStream uses **React Router v6** for client-side routing. The routing configuration is centralized in `App.jsx` and implements role-based access control with protected routes.
+
+## Route Structure
+
+The application implements three types of route configurations:
+
+<CardGroup cols={3}>
+  <Card title="Public Routes" icon="globe">
+    Accessible to all users
+  </Card>
+  <Card title="Authenticated Routes" icon="lock">
+    Require user authentication
+  </Card>
+  <Card title="Admin Routes" icon="shield">
+    Require admin privileges
+  </Card>
+</CardGroup>
+
+## Main Application Routes
+
+<Tabs>
+  <Tab title="Public Routes">
+    **Publicly Accessible Routes**
+    
+    ```jsx
+    import { Routes, Route, Navigate } from "react-router-dom";
+    import Layout from "./views/Layout/Layout";
+    import Courses from "./views/Courses/Courses";
+    import DetailCourse from "./views/DetailCourse/DetailCourse";
+    import Login from "./views/Login/Login";
+    
+    // Public routes - no authentication required
+    <Routes>
+      <Route 
+        path="/" 
+        element={<Layout updateContextUser={updateContextUser} />} 
+      />
+      
+      <Route 
+        path="/courses/" 
+        element={<Courses updateContextUser={updateContextUser} />} 
+      />
+      
+      <Route 
+        path="/detailCourse/:id" 
+        element={<DetailCourse updateContextUser={updateContextUser} />} 
+      />
+      
+      <Route 
+        path="/login/" 
+        element={<Login updateContextUser={updateContextUser} setLogged={setLogged} />} 
+      />
+    </Routes>
+    ```
+    
+    **Available Public Routes:**
+    - `/` - Home page with course listings
+    - `/courses/` - Course catalog
+    - `/detailCourse/:id` - Course details (dynamic route)
+    - `/login/` - Authentication page
+  </Tab>
+  
+  <Tab title="Authenticated Routes">
+    **Protected User Routes**
+    
+    ```jsx
+    import Student from "./views/Student/Student";
+    import Instructor from "./views/Instructor/Instructor";
+    import ClassList from "./views/ListClass/ClassList";
+    import Lecture from "./views/Lecture/Lecture";
+    import Config from "./views/Config/Config";
+    import CartPage from "./views/CartPage/CartPage";
+    import Form from "./views/Form/Form";
+    import FormLecture from "./views/FormLecture/FormLecture";
+    import EditCourse from "./views/EditCourse/EditCourse";
+    import { CheckOut } from "./Components/Cart/CheckOut";
+    import Mailer from "./views/SendEmails/Mailer";
+    
+    const authenticatedRoutes = (
+      <>
+        <Route 
+          path="/student/:id" 
+          element={<Student updateContextUser={updateContextUser} />} 
+        />
+        
+        <Route 
+          path="/student/classList/:courseId" 
+          element={<ClassList updateContextUser={updateContextUser} />} 
+        />
+        
+        <Route 
+          path="/student/classList/lecture/:lessonId" 
+          element={<Lecture updateContextUser={updateContextUser} />} 
+        />
+        
+        <Route 
+          path="/config/:id" 
+          element={<Config updateContextUser={updateContextUser} />} 
+        />
+        
+        <Route 
+          path="/cart/:id" 
+          element={<CartPage updateContextUser={updateContextUser} />} 
+        />
+        
+        <Route 
+          path="/instructor/:id" 
+          element={<Instructor updateContextUser={updateContextUser} />} 
+        />
+        
+        <Route 
+          path="/instructor/:id/form" 
+          element={<Form updateContextUser={updateContextUser} />} 
+        />
+        
+        <Route 
+          path="/instructor/:courseId/createLecture" 
+          element={<FormLecture updateContextUser={updateContextUser} />} 
+        />
+        
+        <Route 
+          path="/edit/:id" 
+          element={<EditCourse updateContextUser={updateContextUser} />} 
+        />
+        
+        <Route 
+          path="/payment/checkout/sucess" 
+          element={<CheckOut updateContextUser={updateContextUser} />} 
+        />
+        
+        <Route 
+          path="/mailer/:id" 
+          element={<Mailer updateContextUser={updateContextUser} />} 
+        />
+      </>
+    );
+    
+    // Conditional rendering based on authentication
+    {logged2 ? authenticatedRoutes : unauthenticatedRoutes}
+    ```
+  </Tab>
+  
+  <Tab title="Admin Routes">
+    **Administrator Routes**
+    
+    ```jsx
+    import { Dashboard } from "./views/dashboard/Dashboard";
+    
+    const adminRoutes = (
+      <Route 
+        path="/admin/dashboard/:id" 
+        element={<Dashboard updateContextUser={updateContextUser} />} 
+      />
+    );
+    
+    // Conditional rendering based on admin status
+    {session?.isAdmin ? adminRoutes : unauthenticatedRoutes}
+    ```
+    
+    **Admin Route:**
+    - `/admin/dashboard/:id` - Admin dashboard with analytics
+  </Tab>
+</Tabs>
+
+## Route Parameters
+
+EducaStream uses dynamic route parameters for resource-specific pages:
+
+### User ID Routes
+
+```jsx
+// Student dashboard
+path="/student/:id"
+
+// Instructor dashboard  
+path="/instructor/:id"
+
+// User configuration
+path="/config/:id"
+
+// Shopping cart
+path="/cart/:id"
+
+// Admin dashboard
+path="/admin/dashboard/:id"
+
+// Email utility
+path="/mailer/:id"
+```
+
+### Course & Content Routes
+
+```jsx
+// Course details
+path="/detailCourse/:id"
+
+// Course editing
+path="/edit/:id"
+
+// Class list for a course
+path="/student/classList/:courseId"
+
+// Individual lecture
+path="/student/classList/lecture/:lessonId"
+
+// Create lecture for course
+path="/instructor/:courseId/createLecture"
+
+// Instructor course form
+path="/instructor/:id/form"
+```
+
+## Authentication Flow
+
+<Steps>
+  <Step title="Check Session">
+    Application checks localStorage for active session
+    
+    ```jsx
+    const session = JSON.parse(localStorage.getItem("userOnSession"));
+    const logged2 = localStorage.getItem("logged");
+    ```
+  </Step>
+  
+  <Step title="Determine Routes">
+    Routes are conditionally rendered based on auth state
+    
+    ```jsx
+    {session?.isAdmin ? adminRoutes : unauthenticatedRoutes}
+    {logged2 ? authenticatedRoutes : unauthenticatedRoutes}
+    ```
+  </Step>
+  
+  <Step title="Redirect Unauthorized">
+    Unauthenticated users are redirected to login
+    
+    ```jsx
+    const unauthenticatedRoutes = (
+      <>
+        <Route path="/" element={<Navigate to="/login" />} />
+      </>
+    );
+    ```
+  </Step>
+</Steps>
+
+## Navigation Components
+
+### NavBar Integration
+
+The NavBar component provides navigation links that adapt based on user authentication:
+
+```jsx
+import { NavLink } from "react-router-dom";
+
+// Conditional navigation links
+<li>
+  {!userData ? (
+    <NavLink to={"/login"}>Mi aprendizaje</NavLink>
+  ) : (
+    <NavLink to={`/student/${userData?.id}`}>Mi aprendizaje</NavLink>
+  )}
+</li>
+
+<li>
+  {!userData ? (
+    <NavLink to={"/login"}>Enseñar</NavLink>
+  ) : (
+    <NavLink to={`/instructor/${userData?.id}`}>Enseñar</NavLink>
+  )}
+</li>
+```
+
+### Programmatic Navigation
+
+Components use `useNavigate` hook for programmatic navigation:
+
+<Tabs>
+  <Tab title="Basic Navigation">
+    ```jsx
+    import { useNavigate } from "react-router-dom";
+    
+    const MyComponent = () => {
+      const navigate = useNavigate();
+      
+      const handleNavigate = () => {
+        navigate('/courses');
+        window.scrollTo({ top: 0 });
+      };
+      
+      return <button onClick={handleNavigate}>View Courses</button>;
+    };
+    ```
+  </Tab>
+  
+  <Tab title="Dynamic Routes">
+    ```jsx
+    const handleNavigateToStudent = (userId) => {
+      navigate(`/student/${userId}`);
+    };
+    
+    const handleNavigateToCourse = (courseId) => {
+      navigate(`/detailCourse/${courseId}`);
+      window.scrollTo({ top: 0 });
+    };
+    
+    const handleNavigateToLecture = (lessonId) => {
+      navigate(`/student/classList/lecture/${lessonId}`);
+    };
+    ```
+  </Tab>
+  
+  <Tab title="With State">
+    ```jsx
+    // Navigate with scroll to top
+    const handleCardClick = () => {
+      navigate(`/detailCourse/${course.id}`);
+      window.scrollTo({ top: 0 });
+    };
+    
+    // Navigate with cart action
+    const handleBuyNow = () => {
+      addToCart();
+      navigate(`/cart/${userData.id}`);
+      window.scrollTo({ top: 0 });
+    };
+    ```
+  </Tab>
+</Tabs>
+
+## Context Integration
+
+Routes receive user context updates through a shared function:
+
+```jsx
+import React, { useState } from "react";
+
+export const userContext = React.createContext();
+
+function App() {
+  const [user, setUser] = useState({
+    email: "",
+    password: "",
+    isNew: null,
+    enabled: false,
+  });
+  
+  const updateContextUser = (newUser) => {
+    setUser(newUser);
+  };
+  
+  return (
+    <userContext.Provider value={user}>
+      <Routes>
+        <Route 
+          path="/" 
+          element={<Layout updateContextUser={updateContextUser} />} 
+        />
+        {/* All routes receive updateContextUser prop */}
+      </Routes>
+    </userContext.Provider>
+  );
+}
+```
+
+## Conditional UI Elements
+
+### Footer Display Logic
+
+The footer is conditionally rendered based on the current route:
+
+```jsx
+const location = useLocation();
+
+const shouldShowFooter = () => {
+  return ![
+    "/student/",
+    "/student/classList/",
+    "/student/classList/lecture/",
+    "/login",
+    "/instructor/form",
+    "/instructor/",
+    "/detailCourse/",
+    "/config/",
+  ].includes(location.pathname);
+};
+
+// In render
+{shouldShowFooter() && <Footer />}
+```
+
+### NavBar Display Logic
+
+NavBar is hidden only on the login page:
+
+```jsx
+{location.pathname === "/login" ? "" : <NavBar />}
+```
+
+## Route Guards
+
+<Warning>
+The current implementation uses client-side route protection. For production applications, always implement server-side authentication validation in addition to client-side guards.
+</Warning>
+
+### Implementation Pattern
+
+```jsx
+// Check authentication status
+const session = JSON.parse(localStorage.getItem("userOnSession"));
+const logged2 = localStorage.getItem("logged");
+
+// Render routes conditionally
+{logged2 ? (
+  // Authenticated routes
+  <Route path="/student/:id" element={<Student />} />
+) : (
+  // Redirect to login
+  <Route path="/" element={<Navigate to="/login" />} />
+)}
+```
+
+## Complete Route Map
+
+| Route Pattern | Component | Access Level | Description |
+|--------------|-----------|--------------|-------------|
+| `/` | Layout | Public | Home page |
+| `/courses/` | Courses | Public | Course catalog |
+| `/detailCourse/:id` | DetailCourse | Public | Course details |
+| `/login/` | Login | Public | Authentication |
+| `/student/:id` | Student | Authenticated | Student dashboard |
+| `/student/classList/:courseId` | ClassList | Authenticated | Course class list |
+| `/student/classList/lecture/:lessonId` | Lecture | Authenticated | Lecture viewer |
+| `/instructor/:id` | Instructor | Authenticated | Instructor dashboard |
+| `/instructor/:id/form` | Form | Authenticated | Create course form |
+| `/instructor/:courseId/createLecture` | FormLecture | Authenticated | Create lecture |
+| `/edit/:id` | EditCourse | Authenticated | Edit course |
+| `/cart/:id` | CartPage | Authenticated | Shopping cart |
+| `/config/:id` | Config | Authenticated | User settings |
+| `/payment/checkout/sucess` | CheckOut | Authenticated | Payment success |
+| `/mailer/:id` | Mailer | Authenticated | Email utility |
+| `/admin/dashboard/:id` | Dashboard | Admin | Admin dashboard |
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Scroll to Top" icon="arrow-up">
+    Always scroll to top after navigation for better UX
+  </Card>
+  <Card title="Route Parameters" icon="hashtag">
+    Use descriptive parameter names like `:id`, `:courseId`, `:lessonId`
+  </Card>
+  <Card title="Protected Routes" icon="shield-halved">
+    Check authentication before rendering sensitive routes
+  </Card>
+  <Card title="Fallback Routes" icon="route">
+    Use `<Route path="*" element={<Navigate to="/" />} />` for 404s
+  </Card>
+</CardGroup>
+
+<Note>
+When adding new routes, consider:
+- Whether the route requires authentication
+- If it needs admin privileges
+- What URL parameters are needed
+- Whether the NavBar and Footer should display
+- If scroll-to-top behavior is needed
+</Note>

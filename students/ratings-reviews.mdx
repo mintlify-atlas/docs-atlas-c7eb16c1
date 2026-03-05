@@ -1,0 +1,342 @@
+---
+title: Ratings and Reviews
+description: Learn how to rate courses, write reviews, and help other students make informed decisions
+---
+
+## Why Rate Courses?
+
+Your feedback helps:
+
+- **Other students** - Make informed enrollment decisions
+- **Instructors** - Improve course quality and content
+- **Platform** - Highlight quality educational content
+- **Community** - Build a trustworthy learning ecosystem
+
+<Note>
+Only students who have purchased and enrolled in a course can submit ratings and reviews.
+</Note>
+
+## Rating System Overview
+
+EducaStream uses a **5-star rating system** combined with written feedback:
+
+- **Star Rating** (1-5 stars) - Quantitative assessment
+- **Written Comment** - Qualitative feedback and details
+
+### Rating Scale
+
+| Stars | Meaning | When to Use |
+|-------|---------|-------------|
+| ⭐ | Poor | Course did not meet expectations, serious issues |
+| ⭐⭐ | Fair | Below average, needs significant improvement |
+| ⭐⭐⭐ | Good | Meets basic expectations, solid content |
+| ⭐⭐⭐⭐ | Very Good | Exceeds expectations, high-quality content |
+| ⭐⭐⭐⭐⭐ | Excellent | Outstanding course, highly recommended |
+
+## How to Rate a Course
+
+### From Your Student Dashboard
+
+<Steps>
+  <Step title="Access your dashboard">
+    Navigate to your student area at `/student/{your-user-id}`.
+  </Step>
+  
+  <Step title="Locate the course">
+    Find the course you want to rate in your enrolled courses list.
+  </Step>
+  
+  <Step title="Click the rating button">
+    Click the button with the comment icon. It will show:
+    - **"Calificar Curso"** (Rate Course) - If you haven't rated it yet
+    - **"Modificar Calificación"** (Modify Rating) - If you've already rated it
+  </Step>
+  
+  <Step title="Select your star rating">
+    A dialog appears with options from 1 to 5 stars. Choose the rating that best reflects your experience.
+  </Step>
+  
+  <Step title="Write your comment">
+    After selecting stars, you'll be prompted to write a comment describing your experience.
+  </Step>
+  
+  <Step title="Submit">
+    Confirm your submission. You'll see "Calificaste el curso correctamente" (Course rated successfully).
+  </Step>
+</Steps>
+
+<Tip>
+Take time to write thoughtful reviews. Detailed feedback is more helpful than generic comments.
+</Tip>
+
+## Writing Effective Reviews
+
+### What to Include
+
+Good reviews typically mention:
+
+1. **Content Quality**
+   - Was the material accurate and up-to-date?
+   - Did it cover topics comprehensively?
+
+2. **Instructor Effectiveness**
+   - Was the teaching clear and engaging?
+   - Did the instructor respond to questions?
+
+3. **Course Structure**
+   - Were lessons well-organized?
+   - Was the pacing appropriate?
+
+4. **Practical Value**
+   - Could you apply what you learned?
+   - Did it meet your learning objectives?
+
+5. **Technical Quality**
+   - Were videos and materials high quality?
+   - Were there any technical issues?
+
+### Example Reviews
+
+<AccordionGroup>
+  <Accordion title="5-Star Review Example">
+    "Excellent course on React fundamentals! The instructor explained complex concepts clearly with practical examples. The project-based approach helped me build a real portfolio piece. Video quality was great and lessons were well-paced. Highly recommend for beginners!"
+  </Accordion>
+  
+  <Accordion title="3-Star Review Example">
+    "Good introduction to the topic but could use more advanced examples. The basics were covered well, but I was hoping for more depth in certain areas. Still worth taking if you're a complete beginner."
+  </Accordion>
+  
+  <Accordion title="1-Star Review Example">
+    "Course content is outdated and several video links are broken. The instructor hasn't responded to questions in the Q&A section. Would not recommend until these issues are fixed."
+  </Accordion>
+</AccordionGroup>
+
+### Review Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Be Specific" icon="bullseye">
+    Mention specific lessons, topics, or features you liked or didn't like
+  </Card>
+  
+  <Card title="Be Constructive" icon="hammer">
+    Offer suggestions for improvement rather than just criticism
+  </Card>
+  
+  <Card title="Be Honest" icon="scale-balanced">
+    Share your genuine experience to help others make informed decisions
+  </Card>
+  
+  <Card title="Be Respectful" icon="handshake">
+    Critique the content professionally, not the instructor personally
+  </Card>
+</CardGroup>
+
+## Modifying Your Rating
+
+### Updating a Previous Review
+
+If your opinion changes or you want to update your feedback:
+
+<Steps>
+  <Step title="Navigate to the course">
+    Go to your student dashboard and locate the course.
+  </Step>
+  
+  <Step title="Click 'Modificar Calificación'">
+    The button text changes if you've already rated the course.
+  </Step>
+  
+  <Step title="Update star rating">
+    Select a new rating from 1-5 stars.
+  </Step>
+  
+  <Step title="Revise your comment">
+    Write an updated review reflecting your current assessment.
+  </Step>
+  
+  <Step title="Save changes">
+    Your previous rating will be replaced with the new one.
+  </Step>
+</Steps>
+
+<Warning>
+Modifying a rating completely replaces your original review. Your previous star rating and comment will be lost.
+</Warning>
+
+## Viewing Course Ratings
+
+### From Course Details
+
+Before enrolling, you can see ratings:
+
+<Steps>
+  <Step title="Navigate to course details">
+    Click on any course card to view full details.
+  </Step>
+  
+  <Step title="Click 'Ver calificaciones'">
+    The "View Ratings" button opens a dialog with all reviews.
+  </Step>
+  
+  <Step title="Review feedback">
+    See a table of all ratings with star ratings and comments.
+  </Step>
+</Steps>
+
+### Ratings Display Format
+
+Ratings appear in a structured table:
+
+```plaintext
+┌───┬──────────────┬─────────────────────────────────┐
+│ # │ Calificación │ Comentario                      │
+├───┼──────────────┼─────────────────────────────────┤
+│ 1 │ 5 estrellas  │ Excellent course!               │
+│ 2 │ 4 estrellas  │ Very informative and practical  │
+│ 3 │ 5 estrellas  │ Best course I've taken          │
+└───┴──────────────┴─────────────────────────────────┘
+```
+
+### Average Rating Calculation
+
+On course cards, you'll see:
+
+- **Average rating** - Mean of all star ratings (e.g., 4.5)
+- **Star icon** - Visual indicator
+- **Comment count** - Total number of reviews (e.g., "23 comentarios")
+
+```javascript
+// Rating calculation
+const averageRating = totalRating / numberOfRatings;
+// Example: (5 + 4 + 5 + 3 + 5) / 5 = 4.4
+```
+
+<Tip>
+Courses with more reviews generally provide a more accurate picture of quality. Consider both the average rating and number of reviews.
+</Tip>
+
+## Rating Impact
+
+### How Ratings Affect Courses
+
+Your ratings contribute to:
+
+1. **Course visibility** - Higher-rated courses may be featured
+2. **Instructor reputation** - Builds trust and credibility
+3. **Student decisions** - Helps learners choose quality content
+4. **Quality improvement** - Feedback guides course updates
+
+### What Instructors See
+
+Instructors can view:
+- Individual ratings and comments
+- Average rating across all reviews
+- Total number of ratings received
+
+<Note>
+Your identity is linked to your rating, but instructors should use feedback constructively to improve their courses.
+</Note>
+
+## Technical Implementation
+
+### Rating Submission API
+
+```javascript
+// POST request to submit rating
+POST /api/rating
+{
+  courseId: "course_123",
+  userId: "user_456",
+  rating: 5,
+  comment: "Excellent course with great content!"
+}
+```
+
+### Rating Data Structure
+
+```javascript
+// Rating object
+{
+  id: "rating_789",
+  UserId: "user_456",
+  CourseId: "course_123",
+  rating: 5,
+  comment: "Excellent course!",
+  createdAt: "2024-03-15T10:30:00Z",
+  updatedAt: "2024-03-15T10:30:00Z"
+}
+```
+
+### Checking Existing Ratings
+
+The system checks if you've already rated a course:
+
+```javascript
+// Find existing rating
+const existingRating = course.ratings.find(
+  rating => rating.UserId === currentUser.id
+);
+
+// Display appropriate button text
+const buttonText = existingRating 
+  ? "Modificar Calificación" 
+  : "Calificar Curso";
+```
+
+## Rating Guidelines
+
+### Do's
+
+- ✅ Rate courses after completing significant portions
+- ✅ Be honest about your experience
+- ✅ Mention specific strengths and weaknesses
+- ✅ Update your rating if the course is improved
+- ✅ Consider the course's stated objectives
+
+### Don'ts
+
+- ❌ Rate before watching enough content
+- ❌ Leave ratings based on technical issues outside the instructor's control
+- ❌ Use ratings to attack instructors personally
+- ❌ Rate multiple times (use modify instead)
+- ❌ Copy reviews from other platforms
+
+<Warning>
+Misuse of the rating system (spam, harassment, false reviews) may result in rating removal or account restrictions.
+</Warning>
+
+## Frequently Asked Questions
+
+<AccordionGroup>
+  <Accordion title="Can I rate a course before completing it?">
+    Yes, you can rate at any time after enrollment. However, it's recommended to complete most of the course before rating to provide accurate feedback.
+  </Accordion>
+  
+  <Accordion title="Can I delete my rating?">
+    Currently, you can modify your rating but not delete it entirely. If you need to remove a rating, contact support.
+  </Accordion>
+  
+  <Accordion title="Will my rating be anonymous?">
+    No, ratings are associated with your user account. Instructors can see who left each rating.
+  </Accordion>
+  
+  <Accordion title="How often can I modify my rating?">
+    You can modify your rating as many times as needed. Each modification replaces the previous one.
+  </Accordion>
+  
+  <Accordion title="What if I have issues with a course?">
+    If you're experiencing technical problems or have concerns about course content, contact the instructor first before leaving a low rating. Many issues can be resolved directly.
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Browse Courses" icon="magnifying-glass" href="/students/browsing-courses">
+    Explore courses and read ratings from other students
+  </Card>
+  
+  <Card title="Learning Interface" icon="graduation-cap" href="/students/learning-interface">
+    Access your enrolled courses and start learning
+  </Card>
+</CardGroup>

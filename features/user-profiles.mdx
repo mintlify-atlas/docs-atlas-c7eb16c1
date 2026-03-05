@@ -1,0 +1,370 @@
+---
+title: 'User Profiles'
+description: 'User profile management and configuration settings'
+---
+
+## Overview
+
+EducaStream provides a user configuration page where students can update their profile information, including personal details and profile photos. User data is managed through context and persisted in localStorage.
+
+## Configuration Page
+
+The Config component allows users to update their profile settings.
+
+**Location:** `src/views/Config/Config.jsx`
+
+### Profile Information Display
+
+The configuration page displays the current user's ID and provides a form to update profile details:
+
+```jsx
+const Config = () => {
+  const userData = useContext(userContext);
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    user_name: "",
+    first_name: userData?.first_name,
+    last_name: userData?.last_name,
+    birthdate: "",
+    photoURL: "",
+  });
+  // ...
+};
+```
+
+**Location:** `src/views/Config/Config.jsx:10-19`
+
+## Profile Data Structure
+
+The user profile form manages the following fields:
+
+<ParamField path="user_name" type="string">
+  Username for the account
+</ParamField>
+
+<ParamField path="first_name" type="string">
+  User's first name (nombre)
+</ParamField>
+
+<ParamField path="last_name" type="string">
+  User's last name (apellidos)
+</ParamField>
+
+<ParamField path="birthdate" type="date">
+  User's date of birth (fecha de nacimiento)
+</ParamField>
+
+<ParamField path="photoURL" type="string">
+  URL to user's profile photo stored in Firebase Storage
+</ParamField>
+
+## Form Management
+
+### Input Handling
+
+The form uses controlled components with state management:
+
+```jsx
+const handleChange = (event) => {
+  const { name, value } = event.target;
+  setFormData({ ...formData, [name]: value });
+};
+```
+
+**Location:** `src/views/Config/Config.jsx:21-24`
+
+### Form Fields
+
+The configuration form includes:
+
+<Steps>
+  <Step title="Personal Information">
+    First name (Nombre) and last name (Apellidos) text inputs
+  </Step>
+  
+  <Step title="Account Details">
+    Username (Nombre de Usuario) text input
+  </Step>
+  
+  <Step title="Birth Date">
+    Date picker for birthdate (Fecha de Nacimiento)
+  </Step>
+  
+  <Step title="Profile Photo">
+    File input for uploading profile photo
+  </Step>
+</Steps>
+
+## Photo Upload
+
+Profile photos are uploaded to Firebase Storage:
+
+```jsx
+const uploadImage = async () => {
+  const image = document.getElementById("image");
+  const imageFile = image.files[0];
+  const nombreCurso = document.getElementById("title").value;
+  const imageRef = ref(storage, `courses/${nombreCurso}/${imageFile.name}`);
+  await uploadBytes(imageRef, imageFile);
+  const path = await getDownloadURL(imageRef);
+  setFormData({ ...formData, image: `${path}` });
+
+  return path;
+};
+```
+
+**Location:** `src/views/Config/Config.jsx:25-35`
+
+### Firebase Storage Integration
+
+<ParamField path="storage" type="FirebaseStorage">
+  Firebase storage instance configured in `firebase/firebase.js`
+</ParamField>
+
+<ParamField path="ref()" type="function">
+  Creates a reference to the storage location for the uploaded file
+</ParamField>
+
+<ParamField path="uploadBytes()" type="function">
+  Uploads the file to Firebase Storage
+</ParamField>
+
+<ParamField path="getDownloadURL()" type="function">
+  Retrieves the public URL of the uploaded image
+</ParamField>
+
+## Profile Update
+
+When the user submits the form, the profile is updated via API:
+
+```jsx
+const handleSubmit = async (event) => {
+  const response = await updateUser({ ...formData });
+
+  if (response[0]) {
+    navigate("/courses/");
+  }
+
+  setFormData({
+    user_name: "",
+    first_name: "",
+    last_name: "",
+    birthdate: "",
+    photoURL: "",
+  });
+};
+```
+
+**Location:** `src/views/Config/Config.jsx:37-51`
+
+<Steps>
+  <Step title="Call Update API">
+    Sends formData to `updateUser()` utility function
+  </Step>
+  
+  <Step title="Check Response">
+    Validates successful update from API response
+  </Step>
+  
+  <Step title="Navigate Away">
+    Redirects user to courses page on success
+  </Step>
+  
+  <Step title="Reset Form">
+    Clears form data to prevent resubmission
+  </Step>
+</Steps>
+
+## User Context
+
+User data is provided through React Context:
+
+```jsx
+const userData = useContext(userContext);
+```
+
+**Location:** `src/views/Config/Config.jsx:11`
+
+The `userContext` is defined in the main App component and provides:
+
+- User ID
+- First name
+- Last name
+- Email
+- Profile photo URL
+- Payment history
+- Course enrollments
+
+## Page Structure
+
+The configuration page layout:
+
+```jsx
+return (
+  <div className={Styles.configContainer}>
+    <h1>Configuración</h1>
+    <div>
+      <h5>Usuario n°: {userData?.id}</h5>
+    </div>
+    <div className={Styles.form_container}>
+      <div className={Styles.form}>
+        <h1 className={Styles.textHeader}>Perfil</h1>
+        {/* Form fields */}
+        <div className={Styles.buttonFooter}>
+          <button
+            type="submit"
+            className={Styles.button_submit}
+            onClick={() => handleSubmit}
+          >
+            Actualizar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+```
+
+**Location:** `src/views/Config/Config.jsx:53-127`
+
+## Form Layout
+
+The form uses a two-column layout for related fields:
+
+### First Row
+
+```jsx
+<div className={Styles.lastDates}>
+  <div className={Styles.inputLabel}>
+    <label>Nombre:</label>
+    <input
+      type="text"
+      name="nombre"
+      placeholder="Nombre"
+      className={Styles.inputForm}
+      onChange={handleChange}
+      value={formData.nombre}
+    />
+  </div>
+  <div className={Styles.inputLabel}>
+    <label>Apellidos:</label>
+    <input
+      type="text"
+      name="apellidos"
+      placeholder="Apellidos"
+      className={Styles.inputForm}
+      onChange={handleChange}
+      value={formData.apellidos}
+    />
+  </div>
+</div>
+```
+
+**Location:** `src/views/Config/Config.jsx:63-86`
+
+### Second Row
+
+```jsx
+<div className={Styles.lastDates}>
+  <div className={Styles.inputLabel}>
+    <label>Nombre de Usuario:</label>
+    <input
+      type="text"
+      name="user_name"
+      placeholder="Nombre de usuario"
+      className={Styles.inputForm}
+      onChange={handleChange}
+      value={formData.user_name}
+    />
+  </div>
+  <div className={Styles.inputLabel}>
+    <label>Fecha de Nacimiento:</label>
+    <input
+      type="date"
+      name="fecha_nacimiento"
+      className={Styles.inputDate}
+      onChange={handleChange}
+      value={formData.fecha_nacimiento}
+    />
+  </div>
+</div>
+```
+
+**Location:** `src/views/Config/Config.jsx:87-109`
+
+### Photo Upload Section
+
+```jsx
+<div className={Styles.flex_column1}>
+  <label>Cambiar foto:</label>
+  <input type="file" name="foto" className={Styles.inputFile} />
+</div>
+```
+
+**Location:** `src/views/Config/Config.jsx:112-115`
+
+## User Session Management
+
+User sessions are stored in localStorage:
+
+```javascript
+const session = JSON.parse(localStorage.getItem("userOnSession"));
+```
+
+The session object contains:
+- User profile information
+- Authentication state
+- Payment history
+- Enrolled courses
+
+## Update Workflow
+
+<Steps>
+  <Step title="User Opens Config">
+    Configuration page loads with current user data from context
+  </Step>
+  
+  <Step title="Form Pre-population">
+    First name and last name are pre-filled from userData context
+  </Step>
+  
+  <Step title="User Edits Fields">
+    Changes trigger handleChange which updates formData state
+  </Step>
+  
+  <Step title="Optional Photo Upload">
+    User selects file, which uploads to Firebase and updates photoURL in formData
+  </Step>
+  
+  <Step title="Submit Form">
+    User clicks "Actualizar" button triggering handleSubmit
+  </Step>
+  
+  <Step title="API Call">
+    updateUser() sends formData to backend API
+  </Step>
+  
+  <Step title="Success Redirect">
+    On successful update, user is redirected to courses page
+  </Step>
+</Steps>
+
+## Dependencies
+
+The Config component relies on:
+
+<ParamField path="userContext" type="Context">
+  Provides current user data throughout the application
+</ParamField>
+
+<ParamField path="updateUser" type="function">
+  Utility function in `utils/updateUser.js` that makes API call to update user profile
+</ParamField>
+
+<ParamField path="firebase/storage" type="FirebaseStorage">
+  Firebase Storage instance for uploading profile photos
+</ParamField>
+
+<ParamField path="useNavigate" type="hook">
+  React Router hook for programmatic navigation
+</ParamField>

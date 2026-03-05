@@ -1,0 +1,378 @@
+---
+title: Managing Content
+description: Add, edit, and organize lectures and course materials on EducaStream
+---
+
+Once you've created a course, you can add lectures, edit existing content, and manage your course materials. This guide covers everything you need to know about content management.
+
+## Creating Lectures
+
+Lectures are the individual video lessons within your course. Each lecture belongs to a specific section.
+
+### Accessing the Lecture Form
+
+From your instructor dashboard:
+
+1. Find your course in the "Tus cursos" section
+2. Click the **"Crea clases"** button
+3. You'll be taken to `/instructor/{course-id}/createLecture`
+
+Reference: `~/workspace/source/src/views/Instructor/Instructor.jsx:316-319`
+
+### Lecture Creation Process
+
+<Steps>
+  <Step title="Navigate to Lecture Form">
+    Click "Crea clases" from your course card on the instructor dashboard.
+  </Step>
+  
+  <Step title="Enter Lecture Details">
+    Fill in the lecture title, description, select the section, and upload your video file.
+  </Step>
+  
+  <Step title="Video Processing">
+    The system automatically calculates video duration and uploads it to Firebase Storage.
+  </Step>
+  
+  <Step title="Submit Lecture">
+    Click "Crear Clase" to create your lecture and add it to the course.
+  </Step>
+</Steps>
+
+## Lecture Form Fields
+
+### Lecture Title
+
+- **Field name**: `title`
+- **Type**: Text input
+- **Max length**: 70 characters
+- **Validation**:
+  - Required field
+  - Minimum 3 characters
+
+```jsx
+<input
+  type="text"
+  name="title"
+  maxLength={70}
+  required
+/>
+```
+
+Reference: `~/workspace/source/src/views/FormLecture/FormLecture.jsx:164-172`
+
+### Description
+
+- **Field name**: `description`
+- **Type**: Textarea
+- **Max length**: 100 characters
+- **Validation**:
+  - Required field
+  - Minimum 20 characters
+
+```jsx
+<textarea
+  name="description"
+  maxLength={100}
+  required
+/>
+```
+
+Reference: `~/workspace/source/src/views/FormLecture/FormLecture.jsx:175-182`
+
+### Section Assignment
+
+- **Field name**: `section`
+- **Type**: Select dropdown
+- **Options**: Dynamically generated based on the number of sections defined in the course
+- **Validation**:
+  - Required field
+  - Must be ≥ 1
+  - Cannot be "Seccion:" (default placeholder)
+
+The section dropdown is populated based on the course's `sections` value:
+
+```jsx
+<select name="section">
+  <option>Seccion:</option>
+  {new Array(sections).fill(" ").map((section, index) => (
+    <option key={index} value={index + 1}>
+      Seccion {index + 1}
+    </option>
+  ))}
+</select>
+```
+
+Reference: `~/workspace/source/src/views/FormLecture/FormLecture.jsx:185-198`
+
+<Info>
+Sections are numbered starting from 1. Make sure to assign lectures to the appropriate section for logical content organization.
+</Info>
+
+### Video Upload
+
+- **Field name**: `video_url`
+- **Type**: File input
+- **Storage**: Firebase Storage at `courses/{course-title}/{lecture-title} - {course-id}`
+- **Duration**: Automatically calculated when video is selected
+- **Validation**: Required field
+
+Reference: `~/workspace/source/src/views/FormLecture/FormLecture.jsx:201-207`
+
+#### Video Duration Calculation
+
+When you select a video file, the system automatically calculates its duration:
+
+```javascript
+const getVideoDuration = async () => {
+  const videoInput = document.getElementById("video");
+  if (videoInput.files.length > 0) {
+    const selectedVideo = videoInput.files[0];
+    const videoElement = document.createElement("video");
+    videoElement.src = URL.createObjectURL(selectedVideo);
+    
+    videoElement.onloadedmetadata = () => {
+      const durationInSeconds = videoElement.duration;
+      setDuration(durationInSeconds);
+    };
+  }
+};
+```
+
+Reference: `~/workspace/source/src/views/FormLecture/FormLecture.jsx:51-75`
+
+## Lecture Submission
+
+When you submit a lecture, the following occurs:
+
+<Steps>
+  <Step title="Video Upload">
+    The video file is uploaded to Firebase Storage with the path:
+    `courses/{course-title}/{lecture-title} - {course-id}`
+  </Step>
+  
+  <Step title="Create Lecture Record">
+    A POST request is sent to `/lessons/create` with:
+    
+    ```javascript
+    {
+      title,
+      description,
+      CourseId,
+      video_url,
+      section,
+      duration,
+      wasLook: false
+    }
+    ```
+    
+    Reference: `~/workspace/source/src/views/FormLecture/FormLecture.jsx:106-108`
+  </Step>
+  
+  <Step title="Update Cache">
+    Course data is refreshed via `getAllCourses()` and user data is updated.
+  </Step>
+  
+  <Step title="Confirmation">
+    Success message appears: "Tu clase se creo correctamente!"
+    
+    You're redirected back to your instructor dashboard.
+  </Step>
+</Steps>
+
+## Editing Course Content
+
+### Editing Course Details
+
+To edit your course information:
+
+1. Navigate to your instructor dashboard
+2. Find your course in the "Tus cursos" or "Tus cursos desactivados" sections
+3. Click **"Editar curso"**
+4. Modify any field and click "Modificar curso"
+
+Reference: `~/workspace/source/src/views/Instructor/Instructor.jsx:322-324`
+
+### Editable Course Fields
+
+From the edit page, you can modify:
+
+- **Course Title**: Text input, max 100 characters
+- **Description**: Textarea, max 300 characters
+- **Category**: Select from available categories
+- **Course Image**: Upload a new image (optional - keeps existing if not changed)
+- **Price**: Number input, $0.50 - $9,999.99
+- **Lectures**: Select and edit individual lectures by section
+
+Reference: `~/workspace/source/src/views/EditCourse/EditCourse.jsx:236-353`
+
+<Warning>
+If you don't upload a new image, the existing course image will be retained.
+</Warning>
+
+### Editing Lectures
+
+The edit course page allows you to modify existing lectures:
+
+1. **Select Section**: Lectures are organized by section
+2. **Choose Lecture**: Select the lecture from the dropdown
+3. **Modify Fields**: A modal appears where you can update:
+   - Lecture title
+   - Description (max 300 characters)
+   - Section assignment
+   - Video file (optional)
+
+```javascript
+// Modal HTML structure
+'<label>Nombre:</label>' +
+'<input id="title" placeholder="current title">' +
+'<label>Descripción:</label>' +
+'<textarea id="description" maxLength="300" rows="6" cols="50"></textarea>' +
+'<label>Sección:</label>' +
+'<input id="section" placeholder="current section">' +
+'<label>Cargar nuevo video:</label>' +
+'<input id="video" type="file">'
+```
+
+Reference: `~/workspace/source/src/views/EditCourse/EditCourse.jsx:172-224`
+
+<Info>
+If you don't modify a field in the lecture edit modal, it will maintain its current value.
+</Info>
+
+## Managing Course Status
+
+### Deactivating a Course
+
+To temporarily remove a course from the catalog:
+
+1. Click **"Desactivar curso"** on your course card
+2. Confirm the action in the dialog
+3. The course moves to "Tus cursos desactivados"
+
+Reference: `~/workspace/source/src/views/Instructor/Instructor.jsx:340-343`
+
+```javascript
+const enableRestoreCourse = async (id, value) => {
+  const enableFalseCourse = {
+    id: id,
+    enabled: value,
+  };
+  await updateCourse(enableFalseCourse);
+};
+```
+
+Reference: `~/workspace/source/src/views/Instructor/Instructor.jsx:42-102`
+
+### Restoring a Deactivated Course
+
+To reactivate a course:
+
+1. Find your course in "Tus cursos desactivados"
+2. Click **"Restaurar curso"**
+3. Confirm the restoration
+4. The course returns to your active courses
+
+Reference: `~/workspace/source/src/views/Instructor/Instructor.jsx:376-379`
+
+<Note>
+Banned courses cannot be restored by instructors. Contact support if you believe your course was banned in error.
+</Note>
+
+## Lecture Validation Rules
+
+Lectures must meet these requirements:
+
+<AccordionGroup>
+  <Accordion title="Title Requirements">
+    - Required field
+    - Minimum 3 characters
+    - Maximum 70 characters
+    
+    **Error**: "El nombre es obligatorio." or "Debe tener al menos 3 caracteres."
+    
+    Reference: `~/workspace/source/src/utils/validation.js:42-46`
+  </Accordion>
+  
+  <Accordion title="Description Requirements">
+    - Required field
+    - Minimum 20 characters
+    - Maximum 100 characters (form) or 300 characters (edit)
+    
+    **Error**: "Debe ingresar una breve descripción de la leccion." or "La descripción debe tener al menos 20 caracteres."
+    
+    Reference: `~/workspace/source/src/utils/validation.js:48-52`
+  </Accordion>
+  
+  <Accordion title="Section Requirements">
+    - Required field
+    - Must be a valid section number (≥ 1)
+    - Cannot be the placeholder "Seccion:"
+    
+    **Error**: "Debe ser una de las secciones del listado." or "Las secciones inician desde la seccion 1"
+    
+    Reference: `~/workspace/source/src/utils/validation.js:54-58`
+  </Accordion>
+  
+  <Accordion title="Video Requirements">
+    - Required field
+    - Must upload a video file
+    
+    **Error**: "Debe cargarse un video."
+    
+    Reference: `~/workspace/source/src/utils/validation.js:60-62`
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<Tip>
+**Organize by difficulty**: Use sections to progress from beginner to advanced topics. This helps students follow a clear learning path.
+</Tip>
+
+<Tip>
+**Keep lectures focused**: Each lecture should cover one specific topic or concept. Shorter, focused lectures improve student engagement.
+</Tip>
+
+<Tip>
+**Write descriptive titles**: Lecture titles should clearly indicate what students will learn. Avoid generic names like "Lecture 1".
+</Tip>
+
+<Tip>
+**Test before publishing**: After uploading, play your videos to ensure they uploaded correctly and are the right files.
+</Tip>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Video upload fails">
+    **Possible causes**:
+    - File size too large
+    - Network connection issues
+    - Unsupported video format
+    
+    **Solutions**:
+    - Compress your video file
+    - Check your internet connection
+    - Convert to a supported format (MP4 recommended)
+  </Accordion>
+  
+  <Accordion title="Lecture doesn't appear after creation">
+    **Solution**: Refresh the page or navigate back to your instructor dashboard. The cache may need to update.
+  </Accordion>
+  
+  <Accordion title="Can't select the right section">
+    **Solution**: Ensure you created enough sections when setting up your course. To add more sections, edit your course and increase the sections count.
+  </Accordion>
+</AccordionGroup>
+
+## Related Documentation
+
+<CardGroup cols={2}>
+  <Card title="Creating Courses" icon="plus" href="/instructors/creating-courses">
+    Learn how to create your first course
+  </Card>
+  <Card title="Student Management" icon="users" href="/instructors/student-management">
+    View ratings and manage student interactions
+  </Card>
+</CardGroup>
